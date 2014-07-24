@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="drawerMenu">
+        <item>Mis sitios</item>
+        <item>Mi cuenta</item>
+        <item>Sincronizar</item>
+        <item>Ajustes</item>
+    </array>
+    
+    <array name="drawerMenuIcons">
+        <item>ic_popup_sync</item>
+        <item>ic_popup_sync</item>
+        <item>ic_popup_sync</item>
+        <item>ic_popup_sync</item>
+    </array>
+</resources>
