@@ -8,9 +8,9 @@
     </array>
     
     <array name="drawerMenuIcons">
-        <item>ic_popup_sync</item>
-        <item>ic_popup_sync</item>
-        <item>ic_popup_sync</item>
-        <item>ic_popup_sync</item>
+        <item>ic_action_place</item>
+        <item>ic_action_person</item>
+        <item>ic_action_refresh</item>
+        <item>ic_action_settings</item>
     </array>
 </resources>

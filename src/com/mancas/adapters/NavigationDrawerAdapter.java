@@ -3,6 +3,7 @@ package com.mancas.adapters;
 import com.mancas.educacity.R;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,8 @@ public class NavigationDrawerAdapter extends BaseAdapter {
     private String[] mItems;
     private String[] mIcons;
     private LayoutInflater inflater;
+    
+    private final String TAG = "ADAPTER DRAWER";
 
     public NavigationDrawerAdapter(Context context)
     {
@@ -72,7 +75,8 @@ public class NavigationDrawerAdapter extends BaseAdapter {
     	
     	if (text != null && image != null) {
     		viewHolder.textView.setText(text);
-    		int idDrawable = mContext.getResources().getIdentifier(image, "drawable", null);
+    		int idDrawable = mContext.getResources().getIdentifier(image, "drawable", mContext.getPackageName());
+    		Log.d(TAG, "image:" + image + " id: " + idDrawable);
     		viewHolder.imageView.setImageResource(idDrawable);
     	}
 

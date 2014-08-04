@@ -6,8 +6,10 @@ import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -45,15 +47,33 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+        
+        PreferenceManager.setDefaultValues(this, R.xml.educacity_preferences, false);
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
+        //FragmentManager fragmentManager = getFragmentManager();
+        //fragmentManager.beginTransaction()
+         //       .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+         //       .commit();
+    	switch (position) {
+    	case 0:
+    		//Mis sitios
+    		break;
+    	case 1:
+    		//Mi cuenta
+    		break;
+    	case 2:
+    		//Sincronizar
+    		break;
+    	case 3:
+    		//Ajustes
+    		Intent mIntent = new Intent(this, SettingsActivity.class);
+    		startActivity(mIntent);
+    		break;
+    	}
     }
 
     public void onSectionAttached(int number) {
