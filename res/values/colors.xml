@@ -8,4 +8,5 @@
     <color name="light_gray">#ffeeeeee</color>
     <color name="gray">#333333</color>
     <color name="solid_white">#ffffffff</color>
+    <color name="nav_drawer_item_dark_default">#f7f7f7</color>
 </resources>

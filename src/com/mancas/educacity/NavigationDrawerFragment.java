@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,10 +19,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.mancas.adapters.NavigationDrawerAdapter;
+import com.mancas.utils.Utils;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -90,8 +93,9 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        mDrawerListView = (ListView) inflater.inflate(
+        LinearLayout mDrawer = (LinearLayout) inflater.inflate(
                 R.layout.fragment_navigation_drawer, container, false);
+        mDrawerListView = (ListView) mDrawer.findViewById(R.id.drawer_list);
         mDrawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -100,7 +104,9 @@ public class NavigationDrawerFragment extends Fragment {
         });
         mDrawerListView.setAdapter(new NavigationDrawerAdapter(getActionBar().getThemedContext()));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
-        return mDrawerListView;
+        Utils.setListViewHeightBasedOnChildren(mDrawerListView);
+
+        return mDrawer;
     }
 
     public boolean isDrawerOpen() {
@@ -183,8 +189,13 @@ public class NavigationDrawerFragment extends Fragment {
 
     private void selectItem(int position) {
         mCurrentSelectedPosition = position;
+        Log.d("HOLA", position + "");
         if (mDrawerListView != null) {
             mDrawerListView.setItemChecked(position, true);
+            // Update the current element in the adapter
+            NavigationDrawerAdapter mDrawerAdapter =
+              (NavigationDrawerAdapter) mDrawerListView.getAdapter();
+            mDrawerAdapter.setSelectedItem(position);
         }
         if (mDrawerLayout != null) {
             mDrawerLayout.closeDrawer(mFragmentContainerView);

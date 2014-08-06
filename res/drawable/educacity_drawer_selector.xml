@@ -4,5 +4,5 @@
     <item android:state_selected="true" android:drawable="@android:color/holo_blue_bright" />
     <item android:state_pressed="true" android:drawable="@android:color/holo_blue_light" />
     <item android:state_checked="true" android:drawable="@android:color/holo_blue_bright" />        
-    <item android:drawable="@android:color/transparent" />
+    <item android:drawable="@color/solid_white" />
 </selector>

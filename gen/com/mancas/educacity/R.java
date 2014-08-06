@@ -28,6 +28,7 @@ public final class R {
         public static final int light_gray=0x7f060004;
         public static final int list_background=0x7f060000;
         public static final int list_pressed=0x7f060001;
+        public static final int nav_drawer_item_dark_default=0x7f060007;
         public static final int separator=0x7f060002;
         public static final int solid_white=0x7f060006;
     }
@@ -60,10 +61,11 @@ public final class R {
         public static final int ic_launcher=0x7f020008;
     }
     public static final class id {
-        public static final int action_example=0x7f0b0007;
-        public static final int action_settings=0x7f0b0006;
+        public static final int action_example=0x7f0b0008;
+        public static final int action_settings=0x7f0b0007;
         public static final int container=0x7f0b0001;
         public static final int drawer_layout=0x7f0b0000;
+        public static final int drawer_list=0x7f0b0006;
         public static final int item_image=0x7f0b0003;
         public static final int item_text=0x7f0b0004;
         public static final int navigation_drawer=0x7f0b0002;
@@ -71,9 +73,10 @@ public final class R {
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
-        public static final int educacity_list_with_icon=0x7f030001;
-        public static final int fragment_main=0x7f030002;
-        public static final int fragment_navigation_drawer=0x7f030003;
+        public static final int drawer_list_item_small=0x7f030001;
+        public static final int educacity_list_with_icon=0x7f030002;
+        public static final int fragment_main=0x7f030003;
+        public static final int fragment_navigation_drawer=0x7f030004;
     }
     public static final class menu {
         public static final int global=0x7f0a0000;
