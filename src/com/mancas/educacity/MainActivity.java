@@ -1,8 +1,9 @@
 package com.mancas.educacity;
 
+import com.google.android.gms.maps.SupportMapFragment;
+
 import android.app.ActionBar;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -14,7 +15,7 @@ import android.view.MenuItem;
 
 
 public class MainActivity extends FragmentActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, MapFragment.MapCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, EducacityMapFragment.MapCallbacks {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -24,7 +25,7 @@ public class MainActivity extends FragmentActivity
     /**
      * Fragment managing the behaviors, interactions and presentation of the container.
      */
-    private MapFragment mMapFragment;
+    private EducacityMapFragment mMapFragment;
 
     /**
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
@@ -40,17 +41,15 @@ public class MainActivity extends FragmentActivity
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
-        mMapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-
-        if (savedInstanceState == null) {
-            loadFragment(new MapFragment());
-        }
+        mMapFragment = new EducacityMapFragment();
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
           (DrawerLayout) findViewById(R.id.drawer_layout));
 
         PreferenceManager.setDefaultValues(this, R.xml.educacity_preferences, false);
+        
+        loadFragment(mMapFragment);
     }
 
     @Override
@@ -64,12 +63,12 @@ public class MainActivity extends FragmentActivity
         case 0:
             //Educacity Sevilla
             if (lastPostion != 0) {
-                loadFragment(new MapFragment());
+                loadFragment(new EducacityMapFragment());
             }
             break;
         case 1:
             //Mis sitios
-            
+        	loadFragment(new MySitesFragment());
             break;
         case 2:
             //Mi cuenta
@@ -122,9 +121,7 @@ public class MainActivity extends FragmentActivity
     public void loadFragment(Fragment fragment)
     {
         getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
-        if (fragment instanceof MapFragment) {
-            mMapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        }
+        //mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
     }
 
     @Override

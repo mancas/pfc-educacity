@@ -38,7 +38,7 @@ public class MyAccountFragment extends Fragment
     public void onDestroyView() {
         super.onDestroyView();
         try {
-            Fragment fragment =  getActivity().getFragmentManager().findFragmentById(R.id.my_account);
+            Fragment fragment =  getActivity().getFragmentManager().findFragmentById(R.id.container);
             if (fragment != null) getFragmentManager().beginTransaction().remove(fragment).commit();
         } catch (IllegalStateException e) {
             //handle this situation because you are necessary will get 
