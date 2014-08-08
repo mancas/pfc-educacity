@@ -1,6 +1,9 @@
 package com.mancas.educacity;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
@@ -11,7 +14,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 
 import com.mancas.adapters.NavigationDrawerAdapter;
 import com.mancas.utils.Utils;
+import com.mancas.utils.DrawerItem;
 
 /**
  * Fragment used for managing interactions for and presentation of a navigation drawer.
@@ -61,6 +64,22 @@ public class NavigationDrawerFragment extends Fragment {
     private int mCurrentSelectedPosition = 0;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
+    private static boolean mNoCallback = false;
+
+    private static List<DrawerItem> mDrawerItems = new ArrayList<DrawerItem>();
+
+    static {
+        mDrawerItems.add(
+          new DrawerItem(R.layout.educacity_list_with_icon, R.drawable.ic_action_place, R.string.drawer_map));
+        mDrawerItems.add(
+          new DrawerItem(R.layout.educacity_list_with_icon, R.drawable.ic_action_place, R.string.drawer_my_sites));
+        mDrawerItems.add(
+          new DrawerItem(R.layout.educacity_list_with_icon, R.drawable.ic_action_person, R.string.drawer_my_account));
+        mDrawerItems.add(
+          new DrawerItem(R.layout.drawer_list_item_small, R.drawable.ic_action_refresh, R.string.drawer_sync));
+        mDrawerItems.add(
+          new DrawerItem(R.layout.drawer_list_item_small, R.drawable.ic_action_settings, R.string.drawer_settings));
+    }
 
     public NavigationDrawerFragment() {
     }
@@ -80,7 +99,7 @@ public class NavigationDrawerFragment extends Fragment {
         }
 
         // Select either the default item (0) or the last selected item.
-        selectItem(mCurrentSelectedPosition);
+        selectItem(mCurrentSelectedPosition, mNoCallback);
     }
 
     @Override
@@ -102,7 +121,7 @@ public class NavigationDrawerFragment extends Fragment {
                 selectItem(position);
             }
         });
-        mDrawerListView.setAdapter(new NavigationDrawerAdapter(getActionBar().getThemedContext()));
+        mDrawerListView.setAdapter(new NavigationDrawerAdapter(getActionBar().getThemedContext(), mDrawerItems));
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         Utils.setListViewHeightBasedOnChildren(mDrawerListView);
 
@@ -188,8 +207,8 @@ public class NavigationDrawerFragment extends Fragment {
     }
 
     private void selectItem(int position) {
+        int tLastPosition = mCurrentSelectedPosition;
         mCurrentSelectedPosition = position;
-        Log.d("HOLA", position + "");
         if (mDrawerListView != null) {
             mDrawerListView.setItemChecked(position, true);
             // Update the current element in the adapter
@@ -201,7 +220,25 @@ public class NavigationDrawerFragment extends Fragment {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
         }
         if (mCallbacks != null) {
-            mCallbacks.onNavigationDrawerItemSelected(position);
+            mCallbacks.onNavigationDrawerItemSelected(position, tLastPosition);
+        }
+    }
+
+    private void selectItem(int position, boolean callback) {
+        int tLastPosition = mCurrentSelectedPosition;
+        mCurrentSelectedPosition = position;
+        if (mDrawerListView != null) {
+            mDrawerListView.setItemChecked(position, true);
+            // Update the current element in the adapter
+            NavigationDrawerAdapter mDrawerAdapter =
+              (NavigationDrawerAdapter) mDrawerListView.getAdapter();
+            mDrawerAdapter.setSelectedItem(position);
+        }
+        if (mDrawerLayout != null) {
+            mDrawerLayout.closeDrawer(mFragmentContainerView);
+        }
+        if (mCallbacks != null && callback) {
+            mCallbacks.onNavigationDrawerItemSelected(position, tLastPosition);
         }
     }
 
@@ -274,6 +311,11 @@ public class NavigationDrawerFragment extends Fragment {
         return getActivity().getActionBar();
     }
 
+    public int getCurrentSelectedItem()
+    {
+        return mCurrentSelectedPosition;
+    }
+
     /**
      * Callbacks interface that all activities using this fragment must implement.
      */
@@ -281,6 +323,6 @@ public class NavigationDrawerFragment extends Fragment {
         /**
          * Called when an item in the navigation drawer is selected.
          */
-        void onNavigationDrawerItemSelected(int position);
+        void onNavigationDrawerItemSelected(int position, int lastPosition);
     }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="drawerMenu">
+        <item>Sevilla</item>
         <item>Mis sitios</item>
         <item>Mi cuenta</item>
         <item>Sincronizar</item>
@@ -8,6 +9,7 @@
     </array>
     
     <array name="drawerMenuIcons">
+        <item>ic_action_place</item>
         <item>ic_action_place</item>
         <item>ic_action_person</item>
         <item>ic_action_refresh</item>

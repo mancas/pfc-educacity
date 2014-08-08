@@ -10,4 +10,16 @@
     <string name="action_example">Example action</string>
     <string name="action_settings">Settings</string>
 
+    <!-- Dialogs -->
+    <string name="enable_gps">Necesitas activar el GPS, ¿quieres hacerlo ahora?</string>
+    <string name="settings">Ajustes</string>
+    <string name="markers">Añadiendo marcadores</string>
+    <string name="loading">Cargando...</string>
+    
+    <!-- Drawer -->
+    <string name="drawer_map">Sevilla</string>
+    <string name="drawer_my_sites">Mis sitios</string>
+    <string name="drawer_my_account">Mi cuenta</string>
+    <string name="drawer_sync">Sincronizar</string>
+    <string name="drawer_settings">Ajustes</string>
 </resources>

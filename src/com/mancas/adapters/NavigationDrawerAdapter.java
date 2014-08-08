@@ -1,10 +1,9 @@
 package com.mancas.adapters;
 
-import com.mancas.educacity.R;
+import java.util.List;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.renderscript.Type;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,21 +12,23 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.mancas.educacity.R;
+import com.mancas.utils.DrawerItem;
+
 public class NavigationDrawerAdapter extends BaseAdapter {
 
     private Context mContext;
-    private String[] mItems;
-    private String[] mIcons;
+    private List<DrawerItem> mItems;
     private LayoutInflater inflater;
     private int mSelectedItem = 0;
 
     private final String TAG = "ADAPTER DRAWER";
 
-    public NavigationDrawerAdapter(Context context)
+    public NavigationDrawerAdapter(Context context, List<DrawerItem> items)
     {
+        super();
         this.mContext = context;
-        this.mItems = context.getResources().getStringArray(R.array.drawerMenu);
-        this.mIcons = context.getResources().getStringArray(R.array.drawerMenuIcons);
+        this.mItems = items;
         this.inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
     
@@ -49,13 +50,13 @@ public class NavigationDrawerAdapter extends BaseAdapter {
     @Override
     public int getCount()
     {
-        return mItems.length;
+        return mItems.size();
     }
 
     @Override
     public Object getItem(int position)
     {
-        return mItems[position];
+        return mItems.get(position);
     }
 
     @Override
@@ -68,17 +69,10 @@ public class NavigationDrawerAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent)
     {
         ListImageViewHolder viewHolder = new ListImageViewHolder();
+        DrawerItem tCurrentItem = mItems.get(position);
 
         if (convertView == null) {
-            switch(position) {
-            case 2:
-            case 3:
-                convertView = inflater.inflate(R.layout.drawer_list_item_small, parent, false);
-                break;
-            default:
-                convertView = inflater.inflate(R.layout.educacity_list_with_icon, parent, false);
-                break;
-            }
+            convertView = inflater.inflate(tCurrentItem.getLayout(), parent, false);
 
             viewHolder.textView = (TextView) convertView.findViewById(R.id.item_text);
             viewHolder.imageView = (ImageView) convertView.findViewById(R.id.item_image);
@@ -88,16 +82,11 @@ public class NavigationDrawerAdapter extends BaseAdapter {
             viewHolder = (ListImageViewHolder) convertView.getTag();
         }
 
-        String text = mItems[position];
-        String image = mIcons[position];
-        if (text != null && image != null) {
-            viewHolder.textView.setText(text);
-            boolean isSelectedItem = (position == mSelectedItem);
-            Log.d(TAG, mSelectedItem + "-" + isSelectedItem);
-            viewHolder.textView.setTypeface(null, isSelectedItem ? Typeface.BOLD : Typeface.NORMAL);
-            int idDrawable = mContext.getResources().getIdentifier(image, "drawable", mContext.getPackageName());
-            viewHolder.imageView.setImageResource(idDrawable);
-        }
+        viewHolder.textView.setText(tCurrentItem.getText());
+        boolean isSelectedItem = (position == mSelectedItem);
+        viewHolder.textView.setTypeface(null, isSelectedItem ? Typeface.BOLD : Typeface.NORMAL);
+        //int idDrawable = mContext.getResources().getIdentifier(image, "drawable", mContext.getPackageName());
+        viewHolder.imageView.setImageResource(tCurrentItem.getIcon());
 
         return convertView;
     }
