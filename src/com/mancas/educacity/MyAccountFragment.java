@@ -85,7 +85,7 @@ public class MyAccountFragment extends Fragment
 
     public void changeProfileImage(View view)
     {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        /*Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             // Create the File where the photo should go
             File photoFile = null;
@@ -101,6 +101,11 @@ public class MyAccountFragment extends Fragment
                         Uri.fromFile(photoFile));
                 MyAccountFragment.this.startActivityForResult(takePictureIntent, REQUEST_IMAGE);
             }
+        }*/
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            this.startActivityForResult(intent, REQUEST_IMAGE);
         }
     }
 
@@ -112,8 +117,10 @@ public class MyAccountFragment extends Fragment
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         if (requestCode == REQUEST_IMAGE && resultCode == Activity.RESULT_OK) {
-            Utils.setSquarePicture(mImageProfilePath, mProfileImage);
-            galleryAddPicture();
+            //Utils.setSquarePicture(mImageProfilePath, mProfileImage);
+            //galleryAddPicture();
+            Bitmap bitmap = data.getParcelableExtra("data");
+            mProfileImage.setImageBitmap(bitmap);
         }
     }
 
