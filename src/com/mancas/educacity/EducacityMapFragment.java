@@ -1,5 +1,6 @@
 package com.mancas.educacity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -26,12 +27,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Marker;
 import com.mancas.dialogs.EnableGPSDialog;
 
-public class EducacityMapFragment extends MapFragment
+public class EducacityMapFragment extends Fragment
         implements
         ConnectionCallbacks,
         OnConnectionFailedListener,
@@ -42,7 +42,7 @@ public class EducacityMapFragment extends MapFragment
     /**
      * A pointer to the current callbacks instance (the Activity).
      */
-    private MapCallbacks mCallbacks;
+    private EducacityMapCallbacks mCallbacks;
 
     private FragmentActivity mContext;
 
@@ -54,6 +54,7 @@ public class EducacityMapFragment extends MapFragment
             .setFastestInterval(32)
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     private RelativeLayout infoLayout;
+    private SaveStateMapFragment mMapFragment;
     
     public EducacityMapFragment()
     {
@@ -63,19 +64,8 @@ public class EducacityMapFragment extends MapFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        /*SupportMapFragment mapFragment = 
-                (SupportMapFragment) mContext.getSupportFragmentManager().findFragmentById(R.id.map);
-
-        if (savedInstanceState == null) {
-            // First incarnation of this activity.
-            mapFragment.setRetainInstance(true);
-        } else {
-            // Reincarnated activity. The obtained map is the same map instance in the previous
-            // activity life cycle. There is no need to reinitialize it.
-            mMap = mapFragment.getMap();
-        }*/
-        setUpLocationClientIfNeeded();
-        setUpLocationManagerIfNeeded();
+        //setUpLocationClientIfNeeded();
+        //setUpLocationManagerIfNeeded();
     }
     
     @Override
@@ -83,20 +73,28 @@ public class EducacityMapFragment extends MapFragment
         super.onActivityCreated(savedInstanceState);
     }
 
-    @Override
+    @SuppressLint("NewApi") @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         infoLayout = (RelativeLayout) view.findViewById(R.id.sites_info);
-        setUpMap(R.id.map);
-
+        //setUpMap(R.id.map);
+        mMapFragment = new SaveStateMapFragment();
+        
+        FragmentTransaction ft = mContext.getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.map, mMapFragment);
+        ft.commit();
+        
+        if (savedInstanceState == null) {
+            mMapFragment.setRetainInstance(true);
+        }
         return view;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        try {
+        /*try {
             Fragment fragment =  getActivity().getFragmentManager().findFragmentById(R.id.container);
             if (fragment != null) getFragmentManager().beginTransaction().remove(fragment).commit();
 
@@ -104,7 +102,7 @@ public class EducacityMapFragment extends MapFragment
             //handle this situation because you are necessary will get 
             //an exception here :-(
         	Log.d("MAP", e.getMessage());
-        }
+        }*/
     }
 
     @Override
@@ -112,7 +110,7 @@ public class EducacityMapFragment extends MapFragment
         super.onAttach(activity);
         mContext = (FragmentActivity) activity;
         try {
-            mCallbacks = (MapCallbacks) activity;
+            mCallbacks = (EducacityMapCallbacks) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException("Activity must implement MapCallbacks.");
         }
@@ -133,10 +131,10 @@ public class EducacityMapFragment extends MapFragment
     public void onResume()
     {
         super.onResume();
-        setUpMap(R.id.map);
-        setUpLocationClientIfNeeded();
-        setUpLocationManagerIfNeeded();
-        mLocationClient.connect();
+        //setUpMap(R.id.map);
+        //setUpLocationClientIfNeeded();
+        //setUpLocationManagerIfNeeded();
+        //mLocationClient.connect();
     }
 
     @Override
@@ -180,7 +178,7 @@ public class EducacityMapFragment extends MapFragment
     /**
      * Callbacks interface that all activities using this fragment must implement.
      */
-    public static interface MapCallbacks {
+    public static interface EducacityMapCallbacks {
         /**
          * Called when an item in the navigation drawer is selected.
          */

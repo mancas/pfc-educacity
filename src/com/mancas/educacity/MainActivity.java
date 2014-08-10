@@ -1,10 +1,13 @@
 package com.mancas.educacity;
 
+import java.io.File;
+
 import com.google.android.gms.maps.SupportMapFragment;
 
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -15,7 +18,7 @@ import android.view.MenuItem;
 
 
 public class MainActivity extends FragmentActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, EducacityMapFragment.MapCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, EducacityMapFragment.EducacityMapCallbacks {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -42,7 +45,7 @@ public class MainActivity extends FragmentActivity
         mTitle = getTitle();
 
         mMapFragment = new EducacityMapFragment();
-
+Log.d("MAIN", "On create");
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
           (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -50,6 +53,18 @@ public class MainActivity extends FragmentActivity
         PreferenceManager.setDefaultValues(this, R.xml.educacity_preferences, false);
         
         loadFragment(mMapFragment);
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
     }
 
     @Override
@@ -120,6 +135,10 @@ public class MainActivity extends FragmentActivity
 
     public void loadFragment(Fragment fragment)
     {
+        android.support.v4.app.Fragment f = getSupportFragmentManager().findFragmentById(R.id.map);
+        Log.d("MAIN", "" + (f != null));
+        //if (f != null)
+        //    getSupportFragmentManager().beginTransaction().remove(f).commit();
         getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
         //mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
     }
@@ -128,5 +147,10 @@ public class MainActivity extends FragmentActivity
     public void onMarkerSelected() {
         // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+       super.onActivityResult(requestCode, resultCode, data);
     }
 }

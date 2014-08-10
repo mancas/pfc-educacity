@@ -5,11 +5,16 @@
     android:padding="0dp"
     tools:context="com.mancas.educacity.MainActivity" >
 
-    <fragment
+    <!-- <fragment
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class="com.google.android.gms.maps.SupportMapFragment"/>
+        class="com.google.android.gms.maps.SupportMapFragment"/> -->
+        
+    <FrameLayout
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 
     <RelativeLayout
