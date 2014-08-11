@@ -16,6 +16,7 @@
     <string name="settings">Ajustes</string>
     <string name="markers">Añadiendo marcadores</string>
     <string name="loading">Cargando...</string>
+    <string name="profile_image">Foto de perfil</string>
     
     <!-- Drawer -->
     <string name="drawer_map">Sevilla</string>

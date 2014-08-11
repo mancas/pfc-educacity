@@ -10,4 +10,6 @@
     -->
     <dimen name="navigation_drawer_width">240dp</dimen>
 
+    <!-- Custom -->
+    <dimen name="vertical_margin_text">10dp</dimen>
 </resources>

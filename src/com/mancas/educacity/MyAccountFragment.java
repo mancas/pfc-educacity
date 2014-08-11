@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,16 +21,21 @@ import android.widget.ImageView;
 import com.mancas.album.storage.AlbumStorageDirFactory;
 import com.mancas.album.storage.BaseAlbumDirFactory;
 import com.mancas.album.storage.FroyoAlbumDirFactory;
+import com.mancas.dialogs.PickPictureDialog;
+import com.mancas.dialogs.PickPictureDialog.PickPictureListiner;
 import com.mancas.utils.Utils;
 
 public class MyAccountFragment extends Fragment
-{
-    public static final String TAG = "My Account Fragment";
+  implements PickPictureDialog.PickPictureListiner
+  {
+    public static final String TAG = "AccountFragment";
     private ImageView mProfileImage;
 
-    public static final int REQUEST_IMAGE = 1;
+    public static final int TAKE_IMAGE_FROM_CAMERA = 1;
+    public static final int TAKE_IMAGE_FROM_GALLERY = 2;
     private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
     private String mImageProfilePath;
+    private final PickPictureListiner mPickPictureListener = this;
 
 
     @Override
@@ -63,7 +69,8 @@ public class MyAccountFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                changeProfileImage(v);
+                PickPictureDialog dialog = PickPictureDialog.newInstance(mPickPictureListener);
+                dialog.show(getFragmentManager(), TAG);
             }
         });
 
@@ -83,35 +90,10 @@ public class MyAccountFragment extends Fragment
         }
     }
 
-    public void changeProfileImage(View view)
-    {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-            // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = Utils.createImageFile(mAlbumStorageDirFactory.getAlbumStorageDir(getAlbumName()));
-                mImageProfilePath = photoFile.getAbsolutePath();
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-            }
-            // Continue only if the File was successfully created
-            if (photoFile != null) {
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                        Uri.fromFile(photoFile));
-                MyAccountFragment.this.startActivityForResult(takePictureIntent, REQUEST_IMAGE);
-            }
-        }
-    }
-
-    public void changeProfileName()
-    {
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if (requestCode == REQUEST_IMAGE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == TAKE_IMAGE_FROM_CAMERA && resultCode == Activity.RESULT_OK) {
             Utils.setSquarePicture(mImageProfilePath, mProfileImage);
             galleryAddPicture();
         }
@@ -128,5 +110,41 @@ public class MyAccountFragment extends Fragment
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         getActivity().sendBroadcast(mediaScanIntent);
+    }
+
+    @Override
+    public void onCameraBtnClick(DialogFragment dialog)
+    {
+        dialog.dismiss();
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = Utils.createImageFile(mAlbumStorageDirFactory.getAlbumStorageDir(getAlbumName()));
+                mImageProfilePath = photoFile.getAbsolutePath();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+                Log.d("MY ACCOUNT", ex.getMessage());
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                        Uri.fromFile(photoFile));
+                takePictureIntent.putExtra("crop", "true");
+                takePictureIntent.putExtra("aspectX", 1);
+                takePictureIntent.putExtra("aspectY", 1);
+                takePictureIntent.putExtra("outputX", 300);
+                takePictureIntent.putExtra("outputY", 300);
+                this.startActivityForResult(takePictureIntent, TAKE_IMAGE_FROM_CAMERA);
+            }
+        }
+    }
+
+    @Override
+    public void onGalleryBtnClick(DialogFragment dialog)
+    {
+        // TODO Auto-generated method stub
+        
     }
 }
