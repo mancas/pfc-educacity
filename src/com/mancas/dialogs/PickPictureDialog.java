@@ -5,6 +5,7 @@ import java.util.List;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.mancas.educacity.R;
+import com.mancas.utils.AppUtils;
 
 public class PickPictureDialog extends DialogFragment
 {
@@ -92,30 +94,26 @@ public class PickPictureDialog extends DialogFragment
     
     private void setCameraInfo(ImageView imageView, TextView textView)
     {
-        PackageManager pm = getActivity().getPackageManager();
-        final Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        final List<ResolveInfo> activities = pm.queryIntentActivities(i, 0);
-Log.d("DIALOG", "" + activities.size());
-        setLabelAndImage(activities, imageView, textView);
+        PackageManager packageManager = getActivity().getPackageManager();
+        final Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        ResolveInfo app = AppUtils.getPreferredApp(intent, packageManager);
+        setLabelAndImage(app, imageView, textView);
     }
 
     private void setGalleryInfo(ImageView imageView, TextView textView)
     {
-        PackageManager pm = getActivity().getPackageManager();
-        final Intent i = new Intent(Intent.ACTION_PICK);
-        i.setType("image/*");
-        final List<ResolveInfo> activities = pm.queryIntentActivities(i, 0);
-Log.d("DIALOG", "" + activities.size());
-        setLabelAndImage(activities, imageView, textView);
+        PackageManager packageManager = getActivity().getPackageManager();
+        final Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        ResolveInfo app = AppUtils.getPreferredApp(intent, packageManager);
+        setLabelAndImage(app, imageView, textView);
     }
     
-    private void setLabelAndImage(List<ResolveInfo> activities,
+    private void setLabelAndImage(ResolveInfo app,
       ImageView imageView, TextView textView)
     {
-        PackageManager pm = getActivity().getPackageManager();
-        for (ResolveInfo resolveInfo : activities) {
-            imageView.setImageDrawable(resolveInfo.loadIcon(pm));
-            textView.setText(resolveInfo.loadLabel(pm));
-        }
+        PackageManager packageManager = getActivity().getPackageManager();
+        imageView.setImageDrawable(app.loadIcon(packageManager));
+        textView.setText(app.loadLabel(packageManager));
     }
 }

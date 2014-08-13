@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -23,6 +24,7 @@ import com.mancas.album.storage.BaseAlbumDirFactory;
 import com.mancas.album.storage.FroyoAlbumDirFactory;
 import com.mancas.dialogs.PickPictureDialog;
 import com.mancas.dialogs.PickPictureDialog.PickPictureListener;
+import com.mancas.utils.AppUtils;
 import com.mancas.utils.Utils;
 
 public class MyAccountFragment extends Fragment
@@ -158,6 +160,13 @@ public class MyAccountFragment extends Fragment
                 takePictureIntent.putExtra("aspectY", 1);
                 takePictureIntent.putExtra("outputX", 300);
                 takePictureIntent.putExtra("outputY", 300);
+                final ResolveInfo app =
+                  AppUtils.getPreferredAppIfAvailable(takePictureIntent, getActivity().getPackageManager());
+
+                if (app != null) {
+                    takePictureIntent.setClassName(app.activityInfo.packageName, app.activityInfo.name);
+                }
+
                 this.startActivityForResult(takePictureIntent, TAKE_IMAGE_FROM_CAMERA);
             }
         }
@@ -175,6 +184,13 @@ public class MyAccountFragment extends Fragment
             takePictureIntent.putExtra("aspectY", 1);
             takePictureIntent.putExtra("outputX", 300);
             takePictureIntent.putExtra("outputY", 300);
+            final ResolveInfo app =
+              AppUtils.getPreferredAppIfAvailable(takePictureIntent, getActivity().getPackageManager());
+    
+            if (app != null) {
+                takePictureIntent.setClassName(app.activityInfo.packageName, app.activityInfo.name);
+            }
+
             this.startActivityForResult(takePictureIntent, TAKE_IMAGE_FROM_GALLERY);
         }
     }
