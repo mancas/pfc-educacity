@@ -7,7 +7,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Intent;
-import android.graphics.Bitmap;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,11 +22,11 @@ import com.mancas.album.storage.AlbumStorageDirFactory;
 import com.mancas.album.storage.BaseAlbumDirFactory;
 import com.mancas.album.storage.FroyoAlbumDirFactory;
 import com.mancas.dialogs.PickPictureDialog;
-import com.mancas.dialogs.PickPictureDialog.PickPictureListiner;
+import com.mancas.dialogs.PickPictureDialog.PickPictureListener;
 import com.mancas.utils.Utils;
 
 public class MyAccountFragment extends Fragment
-  implements PickPictureDialog.PickPictureListiner
+  implements PickPictureDialog.PickPictureListener
   {
     public static final String TAG = "AccountFragment";
     private ImageView mProfileImage;
@@ -35,7 +35,7 @@ public class MyAccountFragment extends Fragment
     public static final int TAKE_IMAGE_FROM_GALLERY = 2;
     private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
     private String mImageProfilePath;
-    private final PickPictureListiner mPickPictureListener = this;
+    private final PickPictureListener mPickPictureListener = this;
 
 
     @Override
@@ -93,9 +93,31 @@ public class MyAccountFragment extends Fragment
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if (requestCode == TAKE_IMAGE_FROM_CAMERA && resultCode == Activity.RESULT_OK) {
-            Utils.setSquarePicture(mImageProfilePath, mProfileImage);
-            galleryAddPicture();
+        if (resultCode == Activity.RESULT_OK) {
+            switch(requestCode) {
+            case TAKE_IMAGE_FROM_CAMERA:
+                Utils.setSquarePicture(mImageProfilePath, mProfileImage);
+                galleryAddPicture();
+                break;
+            case TAKE_IMAGE_FROM_GALLERY:
+                if (data != null) {
+                    Uri selectedImage = data.getData();
+                    Log.d("ACCOUNT", selectedImage.toString());
+                    String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+                    /*Cursor cursor = getActivity().getContentResolver().query(selectedImage,
+                            filePathColumn, null, null, null);
+                    cursor.moveToFirst();
+
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    String picturePath = cursor.getString(columnIndex);
+                    cursor.close();
+                    Utils.setSquarePicture(picturePath, mProfileImage);*/
+                } else {
+                    Log.d("ACCOUNT", "data is null");
+                }
+                break;
+            }
         }
     }
 
@@ -144,7 +166,16 @@ public class MyAccountFragment extends Fragment
     @Override
     public void onGalleryBtnClick(DialogFragment dialog)
     {
-        // TODO Auto-generated method stub
-        
+        dialog.dismiss();
+        Intent takePictureIntent = new Intent(Intent.ACTION_PICK);
+        takePictureIntent.setType("image/*");
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            takePictureIntent.putExtra("crop", "true");
+            takePictureIntent.putExtra("aspectX", 1);
+            takePictureIntent.putExtra("aspectY", 1);
+            takePictureIntent.putExtra("outputX", 300);
+            takePictureIntent.putExtra("outputY", 300);
+            this.startActivityForResult(takePictureIntent, TAKE_IMAGE_FROM_GALLERY);
+        }
     }
 }

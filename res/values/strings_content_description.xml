@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Content Descriptions -->
+    <string name="content_desc_edit">Editar</string>
+    <string name="content_desc_gallery_app">Aplicación Galería</string>
+    <string name="content_desc_camera_app">Aplicación Cámara</string>
+</resources>

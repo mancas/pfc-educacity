@@ -24,7 +24,5 @@
     <string name="drawer_my_account">Mi cuenta</string>
     <string name="drawer_sync">Sincronizar</string>
     <string name="drawer_settings">Ajustes</string>
-    
-    <!-- Content Descriptions -->
-    <string name="content_desc_edit">Editar</string>
+
 </resources>

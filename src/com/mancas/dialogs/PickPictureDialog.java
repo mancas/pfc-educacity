@@ -2,36 +2,32 @@ package com.mancas.dialogs;
 
 import java.util.List;
 
-import com.mancas.educacity.MyAccountFragment;
-import com.mancas.educacity.R;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.mancas.educacity.R;
 
 public class PickPictureDialog extends DialogFragment
 {
     //private Drawable mCameraIcon;
     private RelativeLayout mCameraLayout, mGalleryLayout;
-    static PickPictureListiner mListener;
+    static PickPictureListener mListener;
     private PickPictureDialog mDialog;
 
-    public static PickPictureDialog newInstance(PickPictureListiner listener)
+    public static PickPictureDialog newInstance(PickPictureListener listener)
     {
         PickPictureDialog dialog = new PickPictureDialog();
         mListener = listener;
@@ -39,32 +35,19 @@ public class PickPictureDialog extends DialogFragment
     }
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.profile_image);
-        // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        View rootView = inflater.inflate(R.layout.educacity_pick_picture, null);
-        builder.setView(rootView);
-
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         mDialog = this;
+    }
 
-        //TODO
-        /*PackageManager pm = getActivity().getPackageManager();
-        final Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        final List<ResolveInfo> activities = pm.queryBroadcastReceivers(i, 0);
-        for (ResolveInfo resolveInfo : activities) {
-            ActivityInfo activityInfo = resolveInfo.activityInfo;
-            Log.d("DIALOG", resolveInfo.resolvePackageName);
-            if (activityInfo != null) {
-                //mCameraIcon = activityInfo.loadIcon(pm);
-            }
-        }
-        
-        ImageView iv = (ImageView) rootView.findViewById(R.id.camera_image);
-        //iv.setImageDrawable(mCameraIcon);*/
-        //Set listener to layouts
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.educacity_pick_picture, container, false);
+        //Set dialog title
+        getDialog().setTitle(R.string.profile_image);
+
+       //Set listener to layouts
         mCameraLayout = (RelativeLayout) rootView.findViewById(R.id.take_picture);
         mCameraLayout.setOnClickListener(new OnClickListener()
         {
@@ -84,8 +67,17 @@ public class PickPictureDialog extends DialogFragment
             }
         });
 
-        // Create the AlertDialog object and return it
-        return builder.create();
+        //Getting views to add info
+        ImageView mImageViewCamera = (ImageView) rootView.findViewById(R.id.camera_image);
+        ImageView mImageViewGallery = (ImageView) rootView.findViewById(R.id.gallery_image);
+
+        TextView mTextViewCamera = (TextView) rootView.findViewById(R.id.camera_label);
+        TextView mTextViewGallery = (TextView) rootView.findViewById(R.id.gallery_label);
+
+        setCameraInfo(mImageViewCamera, mTextViewCamera);
+        setGalleryInfo(mImageViewGallery, mTextViewGallery);
+
+        return rootView;
     }
 
     public void onDismiss(DialogInterface dialog)
@@ -93,8 +85,37 @@ public class PickPictureDialog extends DialogFragment
         super.onDismiss(dialog);
     }
 
-    public interface PickPictureListiner {
+    public interface PickPictureListener {
         public void onCameraBtnClick(DialogFragment dialog);
         public void onGalleryBtnClick(DialogFragment dialog);
+    }
+    
+    private void setCameraInfo(ImageView imageView, TextView textView)
+    {
+        PackageManager pm = getActivity().getPackageManager();
+        final Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        final List<ResolveInfo> activities = pm.queryIntentActivities(i, 0);
+Log.d("DIALOG", "" + activities.size());
+        setLabelAndImage(activities, imageView, textView);
+    }
+
+    private void setGalleryInfo(ImageView imageView, TextView textView)
+    {
+        PackageManager pm = getActivity().getPackageManager();
+        final Intent i = new Intent(Intent.ACTION_PICK);
+        i.setType("image/*");
+        final List<ResolveInfo> activities = pm.queryIntentActivities(i, 0);
+Log.d("DIALOG", "" + activities.size());
+        setLabelAndImage(activities, imageView, textView);
+    }
+    
+    private void setLabelAndImage(List<ResolveInfo> activities,
+      ImageView imageView, TextView textView)
+    {
+        PackageManager pm = getActivity().getPackageManager();
+        for (ResolveInfo resolveInfo : activities) {
+            imageView.setImageDrawable(resolveInfo.loadIcon(pm));
+            textView.setText(resolveInfo.loadLabel(pm));
+        }
     }
 }
