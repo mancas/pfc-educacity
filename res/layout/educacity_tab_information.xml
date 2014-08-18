@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/solid_white"
+    tools:context="com.mancas.educacity.SiteInfoFragment" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    
+        <ImageView
+            android:id="@+id/image_site"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/common_signin_btn_icon_dark" />
+    
+        <LinearLayout 
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/image_site"
+            android:orientation="vertical"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:background="@color/solid_white" >
+    
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/educacity_border_bottom"
+                android:text="@string/profile_header_name"
+                android:textColor="@android:color/holo_blue_light"
+                android:textStyle="bold"
+                android:paddingBottom="4dp"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="4dp" />
+        </LinearLayout>
+    </RelativeLayout>
+</ScrollView>

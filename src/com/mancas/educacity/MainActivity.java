@@ -1,13 +1,9 @@
 package com.mancas.educacity;
 
-import java.io.File;
-
-import com.google.android.gms.maps.SupportMapFragment;
-
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -17,9 +13,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends FragmentActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, EducacityMapFragment.EducacityMapCallbacks {
-
+public class MainActivity extends FragmentActivity implements
+  NavigationDrawerFragment.NavigationDrawerCallbacks,
+  EducacityMapFragment.EducacityMapCallbacks,
+  MyAccountFragment.MyAccountCallbacks{
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
@@ -51,7 +48,7 @@ Log.d("MAIN", "On create");
           (DrawerLayout) findViewById(R.id.drawer_layout));
 
         PreferenceManager.setDefaultValues(this, R.xml.educacity_preferences, false);
-        
+
         loadFragment(mMapFragment);
     }
 
@@ -135,12 +132,10 @@ Log.d("MAIN", "On create");
 
     public void loadFragment(Fragment fragment)
     {
-        android.support.v4.app.Fragment f = getSupportFragmentManager().findFragmentById(R.id.map);
-        Log.d("MAIN", "" + (f != null));
-        //if (f != null)
-        //    getSupportFragmentManager().beginTransaction().remove(f).commit();
-        getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
-        //mMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     @Override
@@ -152,5 +147,17 @@ Log.d("MAIN", "On create");
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void updateAccountName(String name) {
+        // TODO Auto-generated method stub
+        Log.d("MAIN", name);
+    }
+
+    @Override
+    public void updateProfileImage(String path) {
+        // TODO Auto-generated method stub
+        
     }
 }

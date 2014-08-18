@@ -4,4 +4,5 @@
     <string name="content_desc_edit">Editar</string>
     <string name="content_desc_gallery_app">Aplicación Galería</string>
     <string name="content_desc_camera_app">Aplicación Cámara</string>
+    <string name="content_desc_profile_image">Imagen de perfil</string>
 </resources>

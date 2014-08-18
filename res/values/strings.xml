@@ -2,9 +2,6 @@
 <resources>
 
     <string name="app_name">Educacity</string>
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
@@ -17,7 +14,8 @@
     <string name="markers">Añadiendo marcadores</string>
     <string name="loading">Cargando...</string>
     <string name="profile_image">Foto de perfil</string>
-    
+    <string name="profile_name">Nombre de perfil</string>
+
     <!-- Drawer -->
     <string name="drawer_map">Sevilla</string>
     <string name="drawer_my_sites">Mis sitios</string>
@@ -25,4 +23,15 @@
     <string name="drawer_sync">Sincronizar</string>
     <string name="drawer_settings">Ajustes</string>
 
+    <!-- Profile -->
+    <string name="profile_header_name">Nombre</string>
+    <string name="profile_header_photos">Fotografías</string>
+    <string name="profile_header_sites">Sitios visitados</string>
+    <string name="profile_name_default">Tu nombre de perfil</string>
+    <string name="title_activity_info">InfoActivity</string>
+
+    <!-- Site Information -->
+    <string name="info_tab_information">Información</string>
+    <string name="info_tab_photos">Fotos</string>
+    <string name="info_tab_timeline">Timeline</string>
 </resources>

@@ -1,16 +1,12 @@
 package com.mancas.dialogs;
 
-import java.util.List;
-
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,13 +22,13 @@ public class PickPictureDialog extends DialogFragment
 {
     //private Drawable mCameraIcon;
     private RelativeLayout mCameraLayout, mGalleryLayout;
-    static PickPictureListener mListener;
+    static PickPictureCallbacks mCallbacks;
     private PickPictureDialog mDialog;
 
-    public static PickPictureDialog newInstance(PickPictureListener listener)
+    public static PickPictureDialog newInstance(PickPictureCallbacks callbacks)
     {
         PickPictureDialog dialog = new PickPictureDialog();
-        mListener = listener;
+        mCallbacks = callbacks;
         return dialog;
     }
 
@@ -56,7 +52,7 @@ public class PickPictureDialog extends DialogFragment
             @Override
             public void onClick(View v)
             {
-                mListener.onCameraBtnClick(mDialog);
+                mCallbacks.onCameraBtnClick(mDialog);
             }
         });
         mGalleryLayout = (RelativeLayout) rootView.findViewById(R.id.pick_picture);
@@ -65,7 +61,7 @@ public class PickPictureDialog extends DialogFragment
             @Override
             public void onClick(View v)
             {
-                mListener.onGalleryBtnClick(mDialog);
+                mCallbacks.onGalleryBtnClick(mDialog);
             }
         });
 
@@ -87,7 +83,7 @@ public class PickPictureDialog extends DialogFragment
         super.onDismiss(dialog);
     }
 
-    public interface PickPictureListener {
+    public static interface PickPictureCallbacks {
         public void onCameraBtnClick(DialogFragment dialog);
         public void onGalleryBtnClick(DialogFragment dialog);
     }

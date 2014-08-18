@@ -452,73 +452,84 @@ containing a value of this type.
         public static final int powered_by_google_light=0x7f02002a;
     }
     public static final class id {
-        public static final int action_example=0x7f09002d;
-        public static final int action_settings=0x7f09002c;
+        public static final int action_example=0x7f090032;
+        public static final int action_settings=0x7f090031;
         public static final int book_now=0x7f090010;
         public static final int buyButton=0x7f09000a;
         public static final int buy_now=0x7f09000f;
         public static final int buy_with_google=0x7f09000e;
-        public static final int camera_image=0x7f090021;
-        public static final int camera_label=0x7f090022;
+        public static final int camera_image=0x7f090024;
+        public static final int camera_label=0x7f090025;
         public static final int classic=0x7f090011;
-        public static final int container=0x7f090015;
-        public static final int drawer_layout=0x7f090014;
-        public static final int drawer_list=0x7f09002b;
-        public static final int edit_profile_name=0x7f09001d;
-        public static final int gallery_image=0x7f090024;
-        public static final int gallery_label=0x7f090025;
+        public static final int container=0x7f090016;
+        public static final int drawer_layout=0x7f090015;
+        public static final int drawer_list=0x7f090030;
+        public static final int edit_profile_name=0x7f09001a;
+        public static final int gallery_image=0x7f090027;
+        public static final int gallery_label=0x7f090028;
         public static final int grayscale=0x7f090012;
         public static final int holo_dark=0x7f090005;
         public static final int holo_light=0x7f090006;
         public static final int hybrid=0x7f090004;
-        public static final int image_profile=0x7f09001b;
-        public static final int item_image=0x7f090017;
-        public static final int item_text=0x7f090018;
-        public static final int map=0x7f090026;
-        public static final int marker_title=0x7f090028;
+        public static final int image_profile=0x7f09001d;
+        public static final int image_site=0x7f090029;
+        public static final int item_image=0x7f090018;
+        public static final int item_text=0x7f090019;
+        public static final int map=0x7f09002b;
+        public static final int marker_title=0x7f09002d;
         public static final int match_parent=0x7f09000c;
         public static final int monochrome=0x7f090013;
-        public static final int my_account=0x7f09001a;
-        public static final int navigation_drawer=0x7f090016;
+        public static final int my_account=0x7f09001c;
+        public static final int navigation_drawer=0x7f090017;
         public static final int none=0x7f090000;
         public static final int normal=0x7f090001;
-        public static final int photographs_taken=0x7f09001e;
-        public static final int pick_picture=0x7f090023;
+        public static final int pager=0x7f090014;
+        public static final int photographs_taken=0x7f090020;
+        public static final int pick_picture=0x7f090026;
         public static final int production=0x7f090007;
-        public static final int profile_edit_btn=0x7f09001c;
+        public static final int profile_edit_btn=0x7f09001e;
+        public static final int profile_name=0x7f09001f;
         public static final int sandbox=0x7f090008;
         public static final int satellite=0x7f090002;
-        public static final int scroll=0x7f090019;
+        public static final int scroll=0x7f09001b;
+        public static final int section_label=0x7f09002a;
         public static final int selectionDetails=0x7f09000b;
-        public static final int sites_info=0x7f090027;
+        public static final int sites_info=0x7f09002c;
+        public static final int sites_list=0x7f090022;
         public static final int strict_sandbox=0x7f090009;
-        public static final int take_picture=0x7f090020;
+        public static final int take_picture=0x7f090023;
         public static final int terrain=0x7f090003;
-        public static final int view1=0x7f09002a;
-        public static final int view_site=0x7f090029;
-        public static final int visited_sites=0x7f09001f;
+        public static final int view1=0x7f09002f;
+        public static final int view_site=0x7f09002e;
+        public static final int visited_sites=0x7f090021;
         public static final int wrap_content=0x7f09000d;
     }
     public static final class integer {
         public static final int google_play_services_version=0x7f0a0000;
     }
     public static final class layout {
-        public static final int activity_main=0x7f030000;
-        public static final int drawer_list_item_small=0x7f030001;
-        public static final int educacity_list_with_icon=0x7f030002;
-        public static final int educacity_my_account=0x7f030003;
-        public static final int educacity_pick_picture=0x7f030004;
-        public static final int fragment_main=0x7f030005;
-        public static final int fragment_navigation_drawer=0x7f030006;
+        public static final int activity_info=0x7f030000;
+        public static final int activity_main=0x7f030001;
+        public static final int drawer_list_item_small=0x7f030002;
+        public static final int educacity_edit_field=0x7f030003;
+        public static final int educacity_list_with_icon=0x7f030004;
+        public static final int educacity_my_account=0x7f030005;
+        public static final int educacity_my_sites=0x7f030006;
+        public static final int educacity_pick_picture=0x7f030007;
+        public static final int educacity_tab_information=0x7f030008;
+        public static final int fragment_info=0x7f030009;
+        public static final int fragment_main=0x7f03000a;
+        public static final int fragment_navigation_drawer=0x7f03000b;
     }
     public static final class menu {
         public static final int global=0x7f0d0000;
-        public static final int main=0x7f0d0001;
+        public static final int info=0x7f0d0001;
+        public static final int main=0x7f0d0002;
     }
     public static final class string {
-        public static final int action_example=0x7f080020;
-        public static final int action_settings=0x7f080021;
-        public static final int album_name=0x7f080022;
+        public static final int action_example=0x7f08001d;
+        public static final int action_settings=0x7f08001e;
+        public static final int album_name=0x7f08001f;
         public static final int app_name=0x7f08001a;
         /**  Button in confirmation dialog to enable Google Play services.  Clicking it
         will direct user to application settings of Google Play services where they
@@ -609,72 +620,83 @@ containing a value of this type.
         /**  Long form sign-in button text [CHAR LIMIT=30] 
          */
         public static final int common_signin_button_text_long=0x7f080018;
-        public static final int content_desc_camera_app=0x7f08004d;
+        public static final int content_desc_camera_app=0x7f080053;
         /**  Content Descriptions 
          */
-        public static final int content_desc_edit=0x7f08004b;
-        public static final int content_desc_gallery_app=0x7f08004c;
+        public static final int content_desc_edit=0x7f080051;
+        public static final int content_desc_gallery_app=0x7f080052;
+        public static final int content_desc_profile_image=0x7f080054;
         /**  Drawer 
          */
-        public static final int drawer_map=0x7f080028;
-        public static final int drawer_my_account=0x7f08002a;
-        public static final int drawer_my_sites=0x7f080029;
-        public static final int drawer_settings=0x7f08002c;
-        public static final int drawer_sync=0x7f08002b;
+        public static final int drawer_map=0x7f080026;
+        public static final int drawer_my_account=0x7f080028;
+        public static final int drawer_my_sites=0x7f080027;
+        public static final int drawer_settings=0x7f08002a;
+        public static final int drawer_sync=0x7f080029;
         /**  Dialogs 
          */
-        public static final int enable_gps=0x7f080023;
-        public static final int loading=0x7f080026;
-        public static final int markers=0x7f080025;
-        public static final int navigation_drawer_close=0x7f08001f;
-        public static final int navigation_drawer_open=0x7f08001e;
-        public static final int pref_about_header=0x7f08003e;
-        public static final int pref_about_web=0x7f080049;
-        public static final int pref_about_web_desc=0x7f08004a;
-        public static final int pref_account_auto_sync=0x7f080042;
+        public static final int enable_gps=0x7f080020;
+        /**  Site Information 
+         */
+        public static final int info_tab_information=0x7f080030;
+        public static final int info_tab_photos=0x7f080031;
+        public static final int info_tab_timeline=0x7f080032;
+        public static final int loading=0x7f080023;
+        public static final int markers=0x7f080022;
+        public static final int navigation_drawer_close=0x7f08001c;
+        public static final int navigation_drawer_open=0x7f08001b;
+        public static final int pref_about_header=0x7f080044;
+        public static final int pref_about_web=0x7f08004f;
+        public static final int pref_about_web_desc=0x7f080050;
+        public static final int pref_account_auto_sync=0x7f080048;
         /**  EDUCACITY 
  Headers 
          */
-        public static final int pref_account_header=0x7f08003c;
+        public static final int pref_account_header=0x7f080042;
         /**  Preferences strings 
          */
-        public static final int pref_account_public=0x7f08003f;
-        public static final int pref_account_public_desc=0x7f080040;
-        public static final int pref_account_sync=0x7f080041;
-        public static final int pref_default_display_name=0x7f080032;
-        public static final int pref_description_social_recommendations=0x7f080030;
+        public static final int pref_account_public=0x7f080045;
+        public static final int pref_account_public_desc=0x7f080046;
+        public static final int pref_account_sync=0x7f080047;
+        public static final int pref_default_display_name=0x7f080038;
+        public static final int pref_description_social_recommendations=0x7f080036;
         /**  Example settings for Data & Sync 
          */
-        public static final int pref_header_data_sync=0x7f080034;
+        public static final int pref_header_data_sync=0x7f08003a;
         /**  Strings related to Settings 
  Example General settings 
          */
-        public static final int pref_header_general=0x7f08002e;
+        public static final int pref_header_general=0x7f080034;
         /**  Example settings for Notifications 
          */
-        public static final int pref_header_notifications=0x7f080037;
-        public static final int pref_notifications=0x7f080043;
-        public static final int pref_notifications_disabled=0x7f080045;
-        public static final int pref_notifications_enabled=0x7f080044;
-        public static final int pref_notifications_header=0x7f08003d;
-        public static final int pref_notifications_ringtone=0x7f080046;
-        public static final int pref_notifications_vibrate=0x7f080047;
-        public static final int pref_notifications_vibrate_desc=0x7f080048;
-        public static final int pref_ringtone_silent=0x7f08003a;
-        public static final int pref_title_add_friends_to_messages=0x7f080033;
-        public static final int pref_title_display_name=0x7f080031;
-        public static final int pref_title_new_message_notifications=0x7f080038;
-        public static final int pref_title_ringtone=0x7f080039;
-        public static final int pref_title_social_recommendations=0x7f08002f;
-        public static final int pref_title_sync_frequency=0x7f080035;
-        public static final int pref_title_system_sync_settings=0x7f080036;
-        public static final int pref_title_vibrate=0x7f08003b;
-        public static final int profile_image=0x7f080027;
-        public static final int settings=0x7f080024;
-        public static final int title_activity_settings=0x7f08002d;
-        public static final int title_section1=0x7f08001b;
-        public static final int title_section2=0x7f08001c;
-        public static final int title_section3=0x7f08001d;
+        public static final int pref_header_notifications=0x7f08003d;
+        public static final int pref_notifications=0x7f080049;
+        public static final int pref_notifications_disabled=0x7f08004b;
+        public static final int pref_notifications_enabled=0x7f08004a;
+        public static final int pref_notifications_header=0x7f080043;
+        public static final int pref_notifications_ringtone=0x7f08004c;
+        public static final int pref_notifications_vibrate=0x7f08004d;
+        public static final int pref_notifications_vibrate_desc=0x7f08004e;
+        public static final int pref_ringtone_silent=0x7f080040;
+        public static final int pref_title_add_friends_to_messages=0x7f080039;
+        public static final int pref_title_display_name=0x7f080037;
+        public static final int pref_title_new_message_notifications=0x7f08003e;
+        public static final int pref_title_ringtone=0x7f08003f;
+        public static final int pref_title_social_recommendations=0x7f080035;
+        public static final int pref_title_sync_frequency=0x7f08003b;
+        public static final int pref_title_system_sync_settings=0x7f08003c;
+        public static final int pref_title_vibrate=0x7f080041;
+        /**  Profile 
+         */
+        public static final int profile_header_name=0x7f08002b;
+        public static final int profile_header_photos=0x7f08002c;
+        public static final int profile_header_sites=0x7f08002d;
+        public static final int profile_image=0x7f080024;
+        public static final int profile_name=0x7f080025;
+        public static final int profile_name_default=0x7f08002e;
+        public static final int settings=0x7f080021;
+        public static final int title_activity_info=0x7f08002f;
+        public static final int title_activity_settings=0x7f080033;
         /**  Text on a placeholder buy button when Google Play services is not
          available or up-to-date 
          */

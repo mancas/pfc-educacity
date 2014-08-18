@@ -23,6 +23,7 @@
             android:paddingRight="@dimen/activity_horizontal_margin"
             android:paddingTop="@dimen/activity_vertical_margin"
             android:paddingBottom="@dimen/activity_vertical_margin"
+            android:contentDescription="@string/content_desc_profile_image"
             android:src="@drawable/common_signin_btn_icon_pressed_dark" />
 
         <LinearLayout
@@ -40,7 +41,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/educacity_border_bottom"
-                android:text="Nombre"
+                android:text="@string/profile_header_name"
                 android:textColor="@android:color/holo_blue_light"
                 android:textStyle="bold"
                 android:paddingBottom="4dp"
@@ -78,7 +79,7 @@
                    android:background="@drawable/educacity_divider_left" />
 
                <TextView
-                   android:id="@+id/edit_profile_name"
+                   android:id="@+id/profile_name"
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:layout_centerVertical="true"
@@ -87,7 +88,7 @@
                    android:singleLine="true"
                    android:textColor="@android:color/secondary_text_light"
                    android:textAllCaps="false"
-                   android:text="Manuel Casas Barradp" />
+                   android:text="@string/profile_name_default" />
             </RelativeLayout>
 
             <!-- Photos taken -->
@@ -95,7 +96,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/educacity_border_bottom"
-                android:text="Fotografías"
+                android:text="@string/profile_header_photos"
                 android:textColor="@android:color/holo_blue_light"
                 android:textStyle="bold"
                 android:paddingBottom="4dp"
@@ -117,7 +118,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/educacity_border_bottom"
-                android:text="Sitios visitados"
+                android:text="@string/profile_header_sites"
                 android:textColor="@android:color/holo_blue_light"
                 android:textStyle="bold"
                 android:paddingBottom="4dp"

@@ -17,28 +17,47 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.mancas.album.storage.AlbumStorageDirFactory;
 import com.mancas.album.storage.BaseAlbumDirFactory;
 import com.mancas.album.storage.FroyoAlbumDirFactory;
+import com.mancas.dialogs.EditProfileNameDialog;
+import com.mancas.dialogs.EditProfileNameDialog.EditProfileDialogCallbacks;
 import com.mancas.dialogs.PickPictureDialog;
-import com.mancas.dialogs.PickPictureDialog.PickPictureListener;
+import com.mancas.dialogs.PickPictureDialog.PickPictureCallbacks;
 import com.mancas.utils.AppUtils;
 import com.mancas.utils.Utils;
 
 public class MyAccountFragment extends Fragment
-  implements PickPictureDialog.PickPictureListener
+  implements PickPictureDialog.PickPictureCallbacks,
+  EditProfileNameDialog.EditProfileDialogCallbacks
   {
     public static final String TAG = "AccountFragment";
     private ImageView mProfileImage;
+    private TextView mProfileName;
+    private ImageButton mEditNameBtn;
 
     public static final int TAKE_IMAGE_FROM_CAMERA = 1;
     public static final int TAKE_IMAGE_FROM_GALLERY = 2;
     private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
     private String mImageProfilePath;
-    private final PickPictureListener mPickPictureListener = this;
+    private final PickPictureCallbacks mPickPictureCallbacks = this;
+    private final EditProfileDialogCallbacks mEditProfileCallbacks = this;
+    private MyAccountCallbacks mAccountListener;
 
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mAccountListener = (MyAccountCallbacks) getActivity();
+        } catch(ClassCastException ex) {
+            Log.e(TAG, getActivity().toString() + " must implement MyAccountCallbacks");
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,7 +90,17 @@ public class MyAccountFragment extends Fragment
             @Override
             public void onClick(View v)
             {
-                PickPictureDialog dialog = PickPictureDialog.newInstance(mPickPictureListener);
+                PickPictureDialog dialog = PickPictureDialog.newInstance(mPickPictureCallbacks);
+                dialog.show(getFragmentManager(), TAG);
+            }
+        });
+        mProfileName = (TextView) rootView.findViewById(R.id.profile_name);
+        mEditNameBtn = (ImageButton) rootView.findViewById(R.id.profile_edit_btn);
+        mEditNameBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditProfileNameDialog dialog =
+                  EditProfileNameDialog.newInstance(mEditProfileCallbacks, "Manuel Casas");
                 dialog.show(getFragmentManager(), TAG);
             }
         });
@@ -82,14 +111,14 @@ public class MyAccountFragment extends Fragment
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        try {
+       /*try {
             Fragment fragment =  getActivity().getFragmentManager().findFragmentById(R.id.container);
             if (fragment != null) getFragmentManager().beginTransaction().remove(fragment).commit();
         } catch (IllegalStateException e) {
             //handle this situation because you are necessary will get 
             //an exception here :-(
         	Log.d(TAG, e.getMessage());
-        }
+        }*/
     }
 
     @Override
@@ -103,10 +132,11 @@ public class MyAccountFragment extends Fragment
                 break;
             case TAKE_IMAGE_FROM_GALLERY:
                 if (data != null) {
-                    Uri selectedImage = data.getData();
-                    Log.d("ACCOUNT", selectedImage.toString());
+                    Log.d("ACCOUNT", data.toString());
+                    //Uri selectedImage = data.getData();
+                    //Log.d("ACCOUNT", selectedImage.toString());
                     String[] filePathColumn = { MediaStore.Images.Media.DATA };
-
+Log.d("ACCOUNT", ""+(getActivity() != null));
                     /*Cursor cursor = getActivity().getContentResolver().query(selectedImage,
                             filePathColumn, null, null, null);
                     cursor.moveToFirst();
@@ -120,6 +150,8 @@ public class MyAccountFragment extends Fragment
                 }
                 break;
             }
+
+            mAccountListener.updateProfileImage(mImageProfilePath);
         }
     }
 
@@ -193,5 +225,21 @@ public class MyAccountFragment extends Fragment
 
             this.startActivityForResult(takePictureIntent, TAKE_IMAGE_FROM_GALLERY);
         }
+    }
+
+    // Listener to update remote data
+    public static interface MyAccountCallbacks {
+        public void updateAccountName(String name);
+        public void updateProfileImage(String path);
+    }
+
+    @Override
+    public void onProfileNameChange(String name) {
+        if (name.length() == 0) {
+            mProfileName.setText(R.string.profile_name_default);
+        } else {
+            mProfileName.setText(name);
+        }
+        mAccountListener.updateAccountName(name);
     }
 }
