@@ -75,8 +75,7 @@
                    android:layout_centerVertical="true"
                    android:src="@drawable/ic_action_edit"
                    android:contentDescription="@string/content_desc_edit"
-                   style="?android:attr/borderlessButtonStyle"
-                   android:background="@drawable/educacity_divider_left" />
+                   style="?android:attr/borderlessButtonStyle" />
 
                <TextView
                    android:id="@+id/profile_name"
@@ -88,7 +87,8 @@
                    android:singleLine="true"
                    android:textColor="@android:color/secondary_text_light"
                    android:textAllCaps="false"
-                   android:text="@string/profile_name_default" />
+                   android:text="@string/profile_name_default"
+                   android:background="@drawable/educacity_divider_left" />
             </RelativeLayout>
 
             <!-- Photos taken -->

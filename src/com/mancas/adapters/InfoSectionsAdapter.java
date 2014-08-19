@@ -12,10 +12,21 @@ import android.support.v13.app.FragmentPagerAdapter;
 
 public class InfoSectionsAdapter extends FragmentPagerAdapter
 {
+    /**
+     * Context of the application
+     */
     private Context mContext;
 
-    public InfoSectionsAdapter(Context context, FragmentManager fm) {
-        super(fm);
+    /**
+     * Adapter for loading pages
+     * This adapter is used to display the three tabs in InfoActivity. These
+     * tabs contains the information about the current site, user photos and
+     * the site timeline
+     * @param context the context of the application
+     * @param fragmentManager FragmentManager to interact with other fragments
+     */
+    public InfoSectionsAdapter(Context context, FragmentManager fragmentManager) {
+        super(fragmentManager);
         mContext = context;
     }
 

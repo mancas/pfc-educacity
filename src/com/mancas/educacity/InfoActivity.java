@@ -1,24 +1,16 @@
 package com.mancas.educacity;
 
-import java.util.Locale;
-
-import com.mancas.adapters.InfoSectionsAdapter;
-
-import android.app.Activity;
 import android.app.ActionBar;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.app.Activity;
 import android.app.FragmentTransaction;
-import android.support.v13.app.FragmentPagerAdapter;
 import android.os.Bundle;
+import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+
+import com.mancas.adapters.InfoSectionsAdapter;
 
 public class InfoActivity extends Activity implements ActionBar.TabListener {
 
@@ -36,10 +28,15 @@ public class InfoActivity extends Activity implements ActionBar.TabListener {
      */
     ViewPager mViewPager;
 
+    private static final int INFO_TAB = 0;
+    private static final int PHOTOS_TAB = 1;
+    private static final int TIMELINE_TAB = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -89,7 +86,15 @@ public class InfoActivity extends Activity implements ActionBar.TabListener {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        switch (id) {
+        case R.id.action_sync:
+            mViewPager.setCurrentItem(PHOTOS_TAB);
+            break;
+        case R.id.action_settings:
+            break;
+        case android.R.id.home:
+            //NavUtils.navigateUpFromSameTask(this);
+            onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);

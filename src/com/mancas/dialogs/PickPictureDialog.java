@@ -18,13 +18,36 @@ import android.widget.TextView;
 import com.mancas.educacity.R;
 import com.mancas.utils.AppUtils;
 
+/**
+ * Class to create a custom dialog fragment to prompt the user
+ * how to complete the task of taking a picture
+ * @author Manuel Casas Barrado
+ * @version 1.0
+ */
 public class PickPictureDialog extends DialogFragment
 {
-    //private Drawable mCameraIcon;
-    private RelativeLayout mCameraLayout, mGalleryLayout;
+    /**
+     * Layout where the user touch to take a photo with the camera
+     */
+    private RelativeLayout mCameraLayout;
+    /**
+     * Layout where the user touch to pick a photo from gallery
+     */
+    private RelativeLayout mGalleryLayout;
+    /**
+     * Dialog listener who implements the necessary callbacks
+     */
     static PickPictureCallbacks mCallbacks;
-    private PickPictureDialog mDialog;
+    /**
+     * A reference to this object
+     */
+    private final PickPictureDialog mDialog = this;
 
+    /**
+     * Method that returns a new instance of PickPictureDialog
+     * @param callbacks an instance of the class which is going to handle events
+     * @return an instance of PickPictureDialog
+     */
     public static PickPictureDialog newInstance(PickPictureCallbacks callbacks)
     {
         PickPictureDialog dialog = new PickPictureDialog();
@@ -35,7 +58,6 @@ public class PickPictureDialog extends DialogFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mDialog = this;
     }
 
     @Override
@@ -78,16 +100,29 @@ public class PickPictureDialog extends DialogFragment
         return rootView;
     }
 
+    @Override
     public void onDismiss(DialogInterface dialog)
     {
         super.onDismiss(dialog);
     }
 
+    /**
+     * Callback interface used to listen for touch events in the layout
+     * @author Manuel Casas Barrado
+     * @version 1.0
+     */
     public static interface PickPictureCallbacks {
         public void onCameraBtnClick(DialogFragment dialog);
         public void onGalleryBtnClick(DialogFragment dialog);
     }
-    
+
+    /**
+     * Method that fill the camera layout with the information relative to
+     * preferred camera or if there is not default camera, the first application
+     * which can handle the request
+     * @param imageView view where the application icon will be placed
+     * @param textView view where the application label will be placed
+     */
     private void setCameraInfo(ImageView imageView, TextView textView)
     {
         PackageManager packageManager = getActivity().getPackageManager();
@@ -96,6 +131,13 @@ public class PickPictureDialog extends DialogFragment
         setLabelAndImage(app, imageView, textView);
     }
 
+    /**
+     * Method that fill the camera layout with the information relative to
+     * preferred gallery or if there is not default gallery, the first application
+     * which can handle the request
+     * @param imageView view where the application icon will be placed
+     * @param textView view where the application label will be placed
+     */
     private void setGalleryInfo(ImageView imageView, TextView textView)
     {
         PackageManager packageManager = getActivity().getPackageManager();
@@ -104,7 +146,13 @@ public class PickPictureDialog extends DialogFragment
         ResolveInfo app = AppUtils.getPreferredApp(intent, packageManager);
         setLabelAndImage(app, imageView, textView);
     }
-    
+
+    /**
+     * Method that set application label and icon in their views
+     * @param app ResolveInfo object of the application
+     * @param imageView view where the application icon will be placed
+     * @param textView view where the application label will be placed
+     */
     private void setLabelAndImage(ResolveInfo app,
       ImageView imageView, TextView textView)
     {

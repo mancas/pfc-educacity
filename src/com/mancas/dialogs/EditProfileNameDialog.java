@@ -11,12 +11,33 @@ import android.widget.EditText;
 
 import com.mancas.educacity.R;
 
+/**
+ * Class to create a custom dialog fragment with a text field
+ * to let user edit his name
+ * @author Manuel Casas Barrado
+ * @version 1.0
+ */
 public class EditProfileNameDialog extends DialogFragment
 {
+    /**
+     * Dialog listener who implements the necessary callbacks
+     */
     private static EditProfileDialogCallbacks mCallbacks;
+    /**
+     * Edit text view where the user will write his name
+     */
     private EditText mNewName;
+    /**
+     * Current user name
+     */
     private static String mCurrentName;
 
+    /**
+     * Method that return a new instance of EditProfileDialog
+     * @param callbacks an instance of the class which is going to handle events
+     * @param currentName the current user profile name
+     * @return an instance of EditProfileDialog
+     */
     public static EditProfileNameDialog newInstance(EditProfileDialogCallbacks callbacks,
       String currentName)
     {
@@ -56,11 +77,18 @@ public class EditProfileNameDialog extends DialogFragment
         return builder.create();
     }
 
+    @Override
     public void onDismiss(DialogInterface dialog)
     {
         super.onDismiss(dialog);
     }
 
+    /**
+     * Callback interface used to listen for changes in the profile name
+     * The handle class must implement it
+     * @author Manuel Casas Barrado
+     * @version 1.0
+     */
     public static interface EditProfileDialogCallbacks {
         public void onProfileNameChange(String name);
     }

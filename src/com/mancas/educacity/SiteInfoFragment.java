@@ -36,6 +36,8 @@ public class SiteInfoFragment extends Fragment
               inflater.inflate(R.layout.educacity_tab_information, container, false);
             break;
         case 1:
+            rootView =
+              inflater.inflate(R.layout.educacity_tab_photos, container, false);
             break;
         case 2:
             break;

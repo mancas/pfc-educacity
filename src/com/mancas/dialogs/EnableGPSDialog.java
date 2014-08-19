@@ -10,8 +10,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 
+/**
+ * Class to create a custom dialog fragment to alert the user
+ * that gps setting is disabled and he has to enable it
+ * @author Manuel Casas Barrado
+ * @version 1.0
+ */
 public class EnableGPSDialog extends DialogFragment
 {
+    /**
+     * Intent Tag to check the activity result
+     */
     public static final int GPS_ENABLED = 1; 
 
     @Override
@@ -36,6 +45,7 @@ public class EnableGPSDialog extends DialogFragment
         return builder.create();
     }
 
+    @Override
     public void onDismiss(DialogInterface dialog)
     {
         super.onDismiss(dialog);

@@ -12,4 +12,6 @@
 
     <!-- Custom -->
     <dimen name="vertical_margin_text">10dp</dimen>
+    <dimen name="grid_vertical_spacing">5dp</dimen>
+    <dimen name="grid_horizontal_spacing">5dp</dimen>
 </resources>
