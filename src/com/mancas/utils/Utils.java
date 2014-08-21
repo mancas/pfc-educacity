@@ -1,16 +1,21 @@
 package com.mancas.utils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.MediaStore.Images;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,12 +50,18 @@ public class Utils
     public static File createImageFile(File storageDir) throws IOException
     {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = JPEG_FILE_PREFIX + timeStamp + "_";
         File album = getAlbumDir(storageDir);
-        File image = File.createTempFile(imageFileName, JPEG_FILE_SUFFIX, album);
+        File image = File.createTempFile(getFileName(), JPEG_FILE_SUFFIX, album);
 
         return image;
+    }
+
+    public static String getFileName()
+    {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = JPEG_FILE_PREFIX + timeStamp + "_";
+
+        return imageFileName;
     }
 
     public static File getAlbumDir(File storageDir)
@@ -135,5 +146,28 @@ public class Utils
 
         /* Associate the Bitmap to the ImageView */
         view.setImageBitmap(bitmap);
+    }
+
+    public static Uri getImageUri(Context context, Bitmap image) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = Images.Media.insertImage(context.getContentResolver(), image, getFileName(), null);
+
+        return Uri.parse(path);
+    }
+
+    public static String getRealPathFromURI(Context context, Uri uri) {
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null); 
+        cursor.moveToFirst(); 
+        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA); 
+
+        return cursor.getString(idx); 
+    }
+
+    public static String getRealPathFromBitmap(Context context, Bitmap image)
+    {
+        Uri uri = getImageUri(context, image);
+
+        return getRealPathFromURI(context, uri);
     }
 }

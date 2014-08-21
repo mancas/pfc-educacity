@@ -9,6 +9,8 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +26,8 @@ import android.widget.TextView;
 import com.mancas.album.storage.AlbumStorageDirFactory;
 import com.mancas.album.storage.BaseAlbumDirFactory;
 import com.mancas.album.storage.FroyoAlbumDirFactory;
+import com.mancas.database.DBHelper;
+import com.mancas.database.DBHelper.DBHelperCallback;
 import com.mancas.dialogs.EditProfileNameDialog;
 import com.mancas.dialogs.EditProfileNameDialog.EditProfileDialogCallbacks;
 import com.mancas.dialogs.PickPictureDialog;
@@ -47,6 +51,9 @@ public class MyAccountFragment extends Fragment
     private final PickPictureCallbacks mPickPictureCallbacks = this;
     private final EditProfileDialogCallbacks mEditProfileCallbacks = this;
     private MyAccountCallbacks mAccountListener;
+    private String mCurrentProfileName;
+    private final String PROFILE_IMAGE_KEY = "profile.image.key";
+    private final String PROFILE_NAME_KEY = "profile.name.key";
 
 
     @Override
@@ -68,6 +75,11 @@ public class MyAccountFragment extends Fragment
         } else {
             mAlbumStorageDirFactory = new BaseAlbumDirFactory();
         }
+        
+        if (savedInstanceState != null) {
+            mImageProfilePath = savedInstanceState.getString(PROFILE_IMAGE_KEY);
+            mCurrentProfileName = savedInstanceState.getString(PROFILE_NAME_KEY);
+        }
     }
 
     public void onResume()
@@ -78,6 +90,14 @@ public class MyAccountFragment extends Fragment
     public void onPause()
     {
         super.onPause();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+        outState.putString(PROFILE_IMAGE_KEY, mImageProfilePath);
+        outState.putString(PROFILE_NAME_KEY, mCurrentProfileName);
     }
 
     @Override
@@ -100,25 +120,28 @@ public class MyAccountFragment extends Fragment
             @Override
             public void onClick(View v) {
                 EditProfileNameDialog dialog =
-                  EditProfileNameDialog.newInstance(mEditProfileCallbacks, "Manuel Casas");
+                  EditProfileNameDialog.newInstance(mEditProfileCallbacks, mCurrentProfileName);
                 dialog.show(getFragmentManager(), TAG);
             }
         });
-
+        //Get the user name
+        if (mCurrentProfileName == null) {
+            mCurrentProfileName = mAccountListener.getCurrentProfileName();
+        }
+        mProfileName.setText(mCurrentProfileName);
+        //Get the user profile image
+        if (mImageProfilePath == null) {
+            mImageProfilePath = mAccountListener.getCurrentProfileImage();
+            if (mImageProfilePath != getActivity().getResources().getString(R.string.profile_image_default)) {
+                Utils.setSquarePicture(mImageProfilePath, mProfileImage);
+            }
+        }
         return rootView;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-       /*try {
-            Fragment fragment =  getActivity().getFragmentManager().findFragmentById(R.id.container);
-            if (fragment != null) getFragmentManager().beginTransaction().remove(fragment).commit();
-        } catch (IllegalStateException e) {
-            //handle this situation because you are necessary will get 
-            //an exception here :-(
-        	Log.d(TAG, e.getMessage());
-        }*/
     }
 
     @Override
@@ -128,29 +151,12 @@ public class MyAccountFragment extends Fragment
             switch(requestCode) {
             case TAKE_IMAGE_FROM_CAMERA:
                 Utils.setSquarePicture(mImageProfilePath, mProfileImage);
-                galleryAddPicture();
                 break;
             case TAKE_IMAGE_FROM_GALLERY:
-                if (data != null) {
-                    Log.d("ACCOUNT", data.toString());
-                    //Uri selectedImage = data.getData();
-                    //Log.d("ACCOUNT", selectedImage.toString());
-                    String[] filePathColumn = { MediaStore.Images.Media.DATA };
-Log.d("ACCOUNT", ""+(getActivity() != null));
-                    /*Cursor cursor = getActivity().getContentResolver().query(selectedImage,
-                            filePathColumn, null, null, null);
-                    cursor.moveToFirst();
-
-                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                    String picturePath = cursor.getString(columnIndex);
-                    cursor.close();
-                    Utils.setSquarePicture(picturePath, mProfileImage);*/
-                } else {
-                    Log.d("ACCOUNT", "data is null");
-                }
+                Utils.setSquarePicture(mImageProfilePath, mProfileImage);
                 break;
             }
-
+            galleryAddPicture();
             mAccountListener.updateProfileImage(mImageProfilePath);
         }
     }
@@ -211,11 +217,21 @@ Log.d("ACCOUNT", ""+(getActivity() != null));
         Intent takePictureIntent = new Intent(Intent.ACTION_PICK);
         takePictureIntent.setType("image/*");
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = Utils.createImageFile(mAlbumStorageDirFactory.getAlbumStorageDir(getAlbumName()));
+                mImageProfilePath = photoFile.getAbsolutePath();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+                Log.d("MY ACCOUNT", ex.getMessage());
+            }
             takePictureIntent.putExtra("crop", "true");
             takePictureIntent.putExtra("aspectX", 1);
             takePictureIntent.putExtra("aspectY", 1);
             takePictureIntent.putExtra("outputX", 300);
             takePictureIntent.putExtra("outputY", 300);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                    Uri.fromFile(photoFile));
             final ResolveInfo app =
               AppUtils.getPreferredAppIfAvailable(takePictureIntent, getActivity().getPackageManager());
     
@@ -231,6 +247,8 @@ Log.d("ACCOUNT", ""+(getActivity() != null));
     public static interface MyAccountCallbacks {
         public void updateAccountName(String name);
         public void updateProfileImage(String path);
+        public String getCurrentProfileName();
+        public String getCurrentProfileImage();
     }
 
     @Override

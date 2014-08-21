@@ -30,10 +30,20 @@
     <string name="profile_header_photos">Fotografías</string>
     <string name="profile_header_sites">Sitios visitados</string>
     <string name="profile_name_default">Tu nombre de perfil</string>
+    <string name="profile_image_default">No Photo</string>
     <string name="title_activity_info">InfoActivity</string>
 
     <!-- Site Information -->
     <string name="info_tab_information">Información</string>
     <string name="info_tab_photos">Fotos</string>
     <string name="info_tab_timeline">Timeline</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="hello_world">Hello world!</string>
+    
+    <!-- Errors -->
+    <string name="db_insert_error">Ocurrió un error inesperado</string>
+
 </resources>

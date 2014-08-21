@@ -46,7 +46,7 @@ public class PickPictureDialog extends DialogFragment
     /**
      * Method that returns a new instance of PickPictureDialog
      * @param callbacks an instance of the class which is going to handle events
-     * @return an instance of PickPictureDialog
+     * @return an instance of {@link PickPictureDialog}
      */
     public static PickPictureDialog newInstance(PickPictureCallbacks callbacks)
     {

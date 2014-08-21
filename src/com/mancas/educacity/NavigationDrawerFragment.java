@@ -76,7 +76,7 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerItems.add(
           new DrawerItem(R.layout.educacity_list_with_icon, R.drawable.ic_action_person, R.string.drawer_my_account));
         mDrawerItems.add(
-          new DrawerItem(R.layout.drawer_list_item_small, R.drawable.ic_action_refresh, R.string.drawer_sync));
+          new DrawerItem(R.layout.drawer_list_item_small, R.drawable.ic_action_sync, R.string.drawer_sync));
         mDrawerItems.add(
           new DrawerItem(R.layout.drawer_list_item_small, R.drawable.ic_action_settings, R.string.drawer_settings));
     }

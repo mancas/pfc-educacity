@@ -5,10 +5,10 @@ import java.util.Locale;
 import com.mancas.educacity.R;
 import com.mancas.educacity.SiteInfoFragment;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.content.Context;
-import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentPagerAdapter;
 
 public class InfoSectionsAdapter extends FragmentPagerAdapter
 {
