@@ -1,5 +1,7 @@
 package com.mancas.database;
 
+import java.util.concurrent.ExecutionException;
+
 import com.mancas.database.Account.AccountEntry;
 import com.mancas.database.Image.ImageEntry;
 
@@ -31,7 +33,7 @@ public class DBHelper
     /**
      * Tag that define database version
      */
-    public static final int DB_VERSION = 5;
+    public static final int DB_VERSION = 6;
     /**
      * An instance of the open database
      */
@@ -68,10 +70,11 @@ public class DBHelper
      */
     private static class DBOpenHelper extends SQLiteOpenHelper
     {
-        private static final String DB_CREATE =
+        private static final String DB_TABLE_ACCOUNT =
                 "CREATE TABLE " + DBHelper.DB_PREFIX + AccountEntry.TABLE_NAME +
                 " (" + AccountEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AccountEntry.COLUMN_NAME + " TEXT NOT NULL," +
-                AccountEntry.COLUMN_IMAGE + " TEXT," + AccountEntry.COLUMN_SYNC + " INTEGER DEFAULT 0);" +
+                AccountEntry.COLUMN_IMAGE + " TEXT," + AccountEntry.COLUMN_SYNC + " INTEGER DEFAULT 0);";
+        private static final String DB_TABLE_IMAGES = 
                 "CREATE TABLE " + DBHelper.DB_PREFIX + ImageEntry.TABLE_NAME +
                 " (" + ImageEntry._ID + " INTEGER PRIMARY KEY," + ImageEntry.COLUMN_PATH + " TEXT NOT NULL," +
                 ImageEntry.COLUMN_SITE_ID + " INTEGER," + ImageEntry.COLUMN_SYNC + " INTEGER DEFAULT 0);";
@@ -88,9 +91,10 @@ public class DBHelper
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            Log.d("DBHELPER", "onCreate");
+Log.d("DBHELPER", "onCreate");
             try {
-                db.execSQL(DB_CREATE);
+                db.execSQL(DB_TABLE_ACCOUNT);
+                db.execSQL(DB_TABLE_IMAGES);
             } catch (SQLException e) {
                 Log.e(DBHelper.TAG, e.getMessage());
             }
@@ -121,6 +125,9 @@ public class DBHelper
         protected SQLiteDatabase doInBackground(DBOpenHelper... params)
         {
             DBOpenHelper helper = params[0];
+            if (db != null) {
+                return db;
+            }
             return helper.getWritableDatabase();
         }
 
@@ -189,7 +196,15 @@ public class DBHelper
             String[] selectArgs, String groupBy, String having, String orderBy)
     {
         if (db == null) {
-            return null;
+            try {
+                new AsyncGetDatabase().execute(dbOpenHelper).get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return null;
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
         Cursor data = db.query(table, projection, select, selectArgs, groupBy, having, orderBy);
 

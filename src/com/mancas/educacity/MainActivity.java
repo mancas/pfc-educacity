@@ -83,6 +83,12 @@ Log.d("MAIN", "On create");
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void onNavigationDrawerItemSelected(int position, int lastPostion) {
         // update the main content by replacing fragments
         //FragmentManager fragmentManager = getFragmentManager();
@@ -192,10 +198,15 @@ Log.d("MAIN", "On create");
 
     @Override
     public void updateProfileImage(String path) {
-        if (mDatabaseManager != null) {
+        if (mDatabaseManager.getDataBase() != null) {
             Cursor data = mDatabaseManager.select(AccountEntry.TABLE_NAME_WITH_PREFIX,
                     AccountEntry.TABLE_PROJECTION, null,
                     null, null, null, AccountEntry.DEFUALT_TABLE_ORDER);
+            if (data == null) {
+                Toast toast = Toast.makeText(getApplicationContext(), R.string.db_insert_error, Toast.LENGTH_SHORT);
+                toast.show();
+                return;
+            }
             //First we need to create the image if not exist
             ContentValues values = new ContentValues();
             values.put(AccountEntry.COLUMN_SYNC, false);
