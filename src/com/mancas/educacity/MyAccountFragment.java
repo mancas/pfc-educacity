@@ -10,24 +10,29 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.mancas.album.storage.AlbumStorageDirFactory;
 import com.mancas.album.storage.BaseAlbumDirFactory;
 import com.mancas.album.storage.FroyoAlbumDirFactory;
+import com.mancas.database.Account.AccountEntry;
 import com.mancas.database.DBHelper;
+import com.mancas.database.DBTaskQuery;
 import com.mancas.database.DBHelper.DBHelperCallback;
+import com.mancas.database.Image.ImageEntry;
 import com.mancas.dialogs.EditProfileNameDialog;
 import com.mancas.dialogs.EditProfileNameDialog.EditProfileDialogCallbacks;
 import com.mancas.dialogs.PickPictureDialog;
@@ -37,15 +42,13 @@ import com.mancas.utils.Utils;
 
 public class MyAccountFragment extends Fragment
   implements PickPictureDialog.PickPictureCallbacks,
-  EditProfileNameDialog.EditProfileDialogCallbacks
+  EditProfileNameDialog.EditProfileDialogCallbacks, DBHelperCallback
   {
-    public static final String TAG = "AccountFragment";
+    public static final String TAG = "MyAccountFragment";
     private ImageView mProfileImage;
     private TextView mProfileName;
     private ImageButton mEditNameBtn;
 
-    public static final int TAKE_IMAGE_FROM_CAMERA = 1;
-    public static final int TAKE_IMAGE_FROM_GALLERY = 2;
     private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
     private String mImageProfilePath;
     private final PickPictureCallbacks mPickPictureCallbacks = this;
@@ -54,7 +57,10 @@ public class MyAccountFragment extends Fragment
     private String mCurrentProfileName;
     private final String PROFILE_IMAGE_KEY = "profile.image.key";
     private final String PROFILE_NAME_KEY = "profile.name.key";
-
+    /**
+     * An instance of {@link DBHelper} used to manage changes in user data
+     */
+    private DBHelper mDatabaseManager;
 
     @Override
     public void onAttach(Activity activity) {
@@ -80,6 +86,8 @@ public class MyAccountFragment extends Fragment
             mImageProfilePath = savedInstanceState.getString(PROFILE_IMAGE_KEY);
             mCurrentProfileName = savedInstanceState.getString(PROFILE_NAME_KEY);
         }
+
+        mDatabaseManager = DBHelper.getInstance(getActivity().getApplicationContext(), this);
     }
 
     public void onResume()
@@ -125,17 +133,9 @@ public class MyAccountFragment extends Fragment
             }
         });
         //Get the user name
-        if (mCurrentProfileName == null) {
-            mCurrentProfileName = mAccountListener.getCurrentProfileName();
-        }
-        mProfileName.setText(mCurrentProfileName);
+        getCurrentProfileName();
         //Get the user profile image
-        if (mImageProfilePath == null) {
-            mImageProfilePath = mAccountListener.getCurrentProfileImage();
-            if (mImageProfilePath != getActivity().getResources().getString(R.string.profile_image_default)) {
-                Utils.setSquarePicture(mImageProfilePath, mProfileImage);
-            }
-        }
+        getCurrentProfileImage();
         return rootView;
     }
 
@@ -149,14 +149,14 @@ public class MyAccountFragment extends Fragment
     {
         if (resultCode == Activity.RESULT_OK) {
             switch(requestCode) {
-            case TAKE_IMAGE_FROM_CAMERA:
+            case AppUtils.TAKE_IMAGE_FROM_CAMERA:
                 Utils.setSquarePicture(mImageProfilePath, mProfileImage);
                 break;
-            case TAKE_IMAGE_FROM_GALLERY:
+            case AppUtils.TAKE_IMAGE_FROM_GALLERY:
                 Utils.setSquarePicture(mImageProfilePath, mProfileImage);
                 break;
             }
-            galleryAddPicture();
+            AppUtils.galleryAddPicture(getActivity(), mImageProfilePath);
             mAccountListener.updateProfileImage(mImageProfilePath);
         }
     }
@@ -164,14 +164,6 @@ public class MyAccountFragment extends Fragment
     /* Photo album for this application */
     private String getAlbumName() {
         return getString(R.string.album_name);
-    }
-
-    private void galleryAddPicture() {
-        Intent mediaScanIntent = new Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE");
-        File f = new File(mImageProfilePath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        getActivity().sendBroadcast(mediaScanIntent);
     }
 
     @Override
@@ -187,17 +179,18 @@ public class MyAccountFragment extends Fragment
                 mImageProfilePath = photoFile.getAbsolutePath();
             } catch (IOException ex) {
                 // Error occurred while creating the File
-                Log.d("MY ACCOUNT", ex.getMessage());
+                Log.e(TAG, ex.getMessage());
+                final Toast toast = new Toast(getActivity().getApplicationContext());
+                toast.setGravity(Gravity.CENTER_VERTICAL|Gravity.BOTTOM, 0, 0);
+                toast.setDuration(Toast.LENGTH_LONG);
+                toast.setText(R.string.error_file_create);
+                toast.show();
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
+                takePictureIntent = AppUtils.configureCropIntent(takePictureIntent);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                         Uri.fromFile(photoFile));
-                takePictureIntent.putExtra("crop", "true");
-                takePictureIntent.putExtra("aspectX", 1);
-                takePictureIntent.putExtra("aspectY", 1);
-                takePictureIntent.putExtra("outputX", 300);
-                takePictureIntent.putExtra("outputY", 300);
                 final ResolveInfo app =
                   AppUtils.getPreferredAppIfAvailable(takePictureIntent, getActivity().getPackageManager());
 
@@ -205,7 +198,7 @@ public class MyAccountFragment extends Fragment
                     takePictureIntent.setClassName(app.activityInfo.packageName, app.activityInfo.name);
                 }
 
-                this.startActivityForResult(takePictureIntent, TAKE_IMAGE_FROM_CAMERA);
+                this.startActivityForResult(takePictureIntent, AppUtils.TAKE_IMAGE_FROM_CAMERA);
             }
         }
     }
@@ -223,13 +216,14 @@ public class MyAccountFragment extends Fragment
                 mImageProfilePath = photoFile.getAbsolutePath();
             } catch (IOException ex) {
                 // Error occurred while creating the File
-                Log.d("MY ACCOUNT", ex.getMessage());
+                Log.e(TAG, ex.getMessage());
+                final Toast toast = new Toast(getActivity().getApplicationContext());
+                toast.setGravity(Gravity.CENTER_VERTICAL|Gravity.BOTTOM, 0, 0);
+                toast.setDuration(Toast.LENGTH_LONG);
+                toast.setText(R.string.error_file_create);
+                toast.show();
             }
-            takePictureIntent.putExtra("crop", "true");
-            takePictureIntent.putExtra("aspectX", 1);
-            takePictureIntent.putExtra("aspectY", 1);
-            takePictureIntent.putExtra("outputX", 300);
-            takePictureIntent.putExtra("outputY", 300);
+            takePictureIntent = AppUtils.configureCropIntent(takePictureIntent);
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                     Uri.fromFile(photoFile));
             final ResolveInfo app =
@@ -239,7 +233,7 @@ public class MyAccountFragment extends Fragment
                 takePictureIntent.setClassName(app.activityInfo.packageName, app.activityInfo.name);
             }
 
-            this.startActivityForResult(takePictureIntent, TAKE_IMAGE_FROM_GALLERY);
+            this.startActivityForResult(takePictureIntent, AppUtils.TAKE_IMAGE_FROM_GALLERY);
         }
     }
 
@@ -247,8 +241,6 @@ public class MyAccountFragment extends Fragment
     public static interface MyAccountCallbacks {
         public void updateAccountName(String name);
         public void updateProfileImage(String path);
-        public String getCurrentProfileName();
-        public String getCurrentProfileImage();
     }
 
     @Override
@@ -259,5 +251,57 @@ public class MyAccountFragment extends Fragment
             mProfileName.setText(name);
         }
         mAccountListener.updateAccountName(name);
+    }
+
+    /**
+     * Retrieve the current profile name from database
+     */
+    public void getCurrentProfileName()
+    {
+        DBTaskQuery task = new DBTaskQuery(AccountEntry.TABLE_NAME_WITH_PREFIX, AccountEntry.TABLE_PROJECTION,
+                null, null, null, null, AccountEntry.DEFUALT_TABLE_ORDER);
+        String name = mDatabaseManager.getProfileName(task);
+
+        if (TextUtils.isEmpty(name)) {
+            name = getResources().getString(R.string.profile_name_default);
+        }
+        mCurrentProfileName = name;
+        mProfileName.setText(name);
+    }
+
+    /**
+     * Retrieve the current profile image path from database
+     */
+    public void getCurrentProfileImage()
+    {
+        long image_id = AppUtils.getAccountImageID(getActivity().getApplicationContext());
+        String[] selectArgs = {String.valueOf(image_id)};
+        DBTaskQuery task = new DBTaskQuery(ImageEntry.TABLE_NAME_WITH_PREFIX, ImageEntry.TABLE_PROJECTION,
+                ImageEntry.DEFAULT_TABLE_SELECTION, selectArgs, null, null, ImageEntry.DEFUALT_TABLE_ORDER);
+        String path = mDatabaseManager.getProfileImagePath(task);
+        if (TextUtils.isEmpty(path)) {
+            getResources().getString(R.string.profile_image_default);
+        }
+
+        mImageProfilePath = path;
+        if (mImageProfilePath != getActivity().getResources().getString(R.string.profile_image_default)) {
+            Utils.setSquarePicture(mImageProfilePath, mProfileImage);
+        }
+    }
+
+    @Override
+    public void onDatabaseOpen(SQLiteDatabase database) {
+    }
+
+    @Override
+    public void onSelectReady(Cursor data) {
+    }
+
+    @Override
+    public void onInsertReady(long id) {
+    }
+
+    @Override
+    public void onUpdateReady(int rows) {
     }
 }

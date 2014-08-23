@@ -56,7 +56,7 @@ public class DBTaskQuery extends DBTask
         this.mSelectArgs = selectArgs;
     }
 
-    public String getmGroupBy()
+    public String getGroupBy()
     {
         return mGroupBy;
     }
@@ -71,7 +71,7 @@ public class DBTaskQuery extends DBTask
         return mHaving;
     }
 
-    public void setmHaving(String having)
+    public void setHaving(String having)
     {
         this.mHaving = having;
     }

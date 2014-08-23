@@ -9,6 +9,9 @@
     <string name="action_take_photo">Añadir foto</string>
     <string name="action_settings">Settings</string>
     <string name="album_name">Educacity Images</string>
+    <string name="retry">Reintentar</string>
+
+    <string name="title_activity_register">RegisterActivity</string>
 
     <!-- Dialogs -->
     <string name="enable_gps">Necesitas activar el GPS, ¿quieres hacerlo ahora?</string>
@@ -42,8 +45,9 @@
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
     <string name="hello_world">Hello world!</string>
-    
+
     <!-- Errors -->
     <string name="db_insert_error">Ocurrió un error inesperado</string>
+    <string name="error_file_create">No se puede crear los archivos</string>
 
 </resources>

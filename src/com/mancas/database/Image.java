@@ -22,11 +22,13 @@ public final class Image
         public static final String COLUMN_SITE_ID = "site_id";
         public static final String COLUMN_PATH = "path";
         public static final String COLUMN_SYNC = "sync";
+        public static final String COLUMN_PUBLIC = "public";
         public static final String TABLE_NAME_WITH_PREFIX = DBHelper.DB_PREFIX + ImageEntry.TABLE_NAME;
         public static final String[] TABLE_PROJECTION = {
             ImageEntry._ID,
             ImageEntry.COLUMN_SITE_ID,
             ImageEntry.COLUMN_PATH,
+            ImageEntry.COLUMN_PUBLIC,
             ImageEntry.COLUMN_SYNC
         };
         public static final String DEFUALT_TABLE_ORDER = ImageEntry._ID + " ASC";

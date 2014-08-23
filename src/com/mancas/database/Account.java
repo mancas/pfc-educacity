@@ -19,6 +19,7 @@ public final class Account
     public static abstract class AccountEntry implements BaseColumns
     {
         public static final String TABLE_NAME = "account";
+        public static final String COLUMN_EMAIL = "email";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_IMAGE = "image_id";
         public static final String COLUMN_SYNC = "sync";
@@ -26,6 +27,7 @@ public final class Account
         public static final String TABLE_NAME_WITH_PREFIX = DBHelper.DB_PREFIX + AccountEntry.TABLE_NAME;
         public static final String[] TABLE_PROJECTION = {
             AccountEntry._ID,
+            AccountEntry.COLUMN_EMAIL,
             AccountEntry.COLUMN_NAME,
             AccountEntry.COLUMN_IMAGE,
             AccountEntry.COLUMN_SYNC

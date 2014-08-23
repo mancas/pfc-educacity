@@ -15,7 +15,7 @@
 
     <!--
     The following two permissions are not required to use
-	Google Maps Android API v2, but are recommended.
+	Google Maps Android API v2, but are recommended.
     -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -40,7 +40,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.mancas.educacity.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,16 +49,33 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name="com.mancas.educacity.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName="com.mancas.educacity.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.mancas.educacity.MainActivity" />
         </activity>
         <activity
-            android:name=".InfoActivity"
+            android:name="com.mancas.educacity.InfoActivity"
             android:label="@string/title_activity_info" >
+        </activity>
+        <activity
+            android:name="com.mancas.educacity.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:parentActivityName="com.mancas.educacity.MainActivity"
+            android:windowSoftInputMode="adjustResize|stateVisible" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.mancas.educacity.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.mancas.educacity.RegisterActivity"
+            android:label="@string/title_activity_register"
+            android:parentActivityName="com.mancas.educacity.LoginActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.mancas.educacity.LoginActivity" />
         </activity>
     </application>
 

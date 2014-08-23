@@ -1,0 +1,21 @@
+<resources>
+
+    <string name="title_activity_login">Entra en Educacity</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Contraseña</string>
+    <string name="prompt_password_confirm">Confirma la contraseña</string>
+    <string name="action_sign_in_register">Entrar</string>
+    <string name="action_sign_in_short">Entrar</string>
+    <string name="action_forgot_password">Olvidaste tu contraseña</string>
+    <string name="login_progress_signing_in">Entrando&#8230;</string>
+    <string name="register_progress_signing_in">Registrando&#8230;</string>
+    <string name="error_invalid_email">El email no es válido</string>
+    <string name="error_invalid_password">La contraseña es muy corta</string>
+    <string name="error_incorrect_password">La contraseña es incorrecta</string>
+    <string name="error_not_equals_passwords">Las contraseñas no coinciden</string>
+    <string name="error_field_required">Este campo es obligatorio</string>
+    <string name="action_create_account">Crear cuenta</string>
+
+</resources>

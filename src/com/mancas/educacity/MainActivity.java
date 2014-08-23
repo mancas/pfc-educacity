@@ -1,10 +1,7 @@
 package com.mancas.educacity;
 
-import com.mancas.database.DBHelper;
-import com.mancas.database.Account.AccountEntry;
-import com.mancas.database.Image.ImageEntry;
-
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.ContentValues;
@@ -15,10 +12,17 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.mancas.database.Account.AccountEntry;
+import com.mancas.database.DBHelper;
+import com.mancas.database.DBHelper.AsyncUpdate;
+import com.mancas.database.DBTaskUpdate;
+import com.mancas.database.Image.ImageEntry;
+import com.mancas.utils.AppUtils;
 
 
 public class MainActivity extends FragmentActivity implements
@@ -53,10 +57,9 @@ public class MainActivity extends FragmentActivity implements
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
-        mDatabaseManager = new DBHelper(getApplicationContext(), this);
+        mDatabaseManager = DBHelper.getInstance(getApplicationContext(), this);
 
         mMapFragment = new EducacityMapFragment();
-Log.d("MAIN", "On create");
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
           (DrawerLayout) findViewById(R.id.drawer_layout));
@@ -70,16 +73,12 @@ Log.d("MAIN", "On create");
     protected void onPause()
     {
         super.onPause();
-        if (mDatabaseManager != null)
-            mDatabaseManager.cleanUp();
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        if (mDatabaseManager != null)
-            mDatabaseManager.establishDB();
     }
 
     @Override
@@ -108,7 +107,7 @@ Log.d("MAIN", "On create");
             break;
         case 2:
             //Mi cuenta
-            loadFragment(new MyAccountFragment());
+            checkAccount();
             break;
         case 3:
             //Sincronizar
@@ -128,6 +127,20 @@ Log.d("MAIN", "On create");
         actionBar.setTitle(mTitle);
     }
 
+    /**
+     * Check if the current user is logged into the application if not,
+     * he must be enter login data or register in order to access to his account
+     */
+    private void checkAccount() {
+        long accountId = AppUtils.getAccountID(getApplicationContext());
+        if (accountId == -1) {
+            //No accounts registered
+            Intent login = new Intent(getApplicationContext(), LoginActivity.class);
+            startActivityForResult(login, LoginActivity.LOGIN_REQUEST);
+        } else {
+            loadFragment(new MyAccountFragment());
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -171,118 +184,72 @@ Log.d("MAIN", "On create");
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
        super.onActivityResult(requestCode, resultCode, data);
+       if (resultCode == Activity.RESULT_OK) {
+           switch (requestCode) {
+           case LoginActivity.LOGIN_REQUEST:
+               loadFragment(new MyAccountFragment());
+               break;
+           }
+       }
     }
 
     @Override
-    public void updateAccountName(String name) {
+    public void updateAccountName(final String name) {
         if (mDatabaseManager != null) {
-            Cursor data = mDatabaseManager.select(AccountEntry.TABLE_NAME_WITH_PREFIX,
-                    AccountEntry.TABLE_PROJECTION, null,
-                    null, null, null, AccountEntry.DEFUALT_TABLE_ORDER);
             ContentValues values = new ContentValues();
             values.put(AccountEntry.COLUMN_NAME, name);
             values.put(AccountEntry.COLUMN_SYNC, false);
-            if (data.getCount() == 0) {
-                //No Account created we need to set up a new account
-                mDatabaseManager.insert(AccountEntry.TABLE_NAME_WITH_PREFIX, null, values);
-            } else {
-                //We must update the current account
-                data.moveToFirst();
-                int id = data.getInt(data.getColumnIndex(AccountEntry._ID));
-                String[] whereArgs = {String.valueOf(id)};
-                mDatabaseManager.update(AccountEntry.TABLE_NAME_WITH_PREFIX, values,
-                        AccountEntry.DEFAULT_TABLE_SELECTION, whereArgs);
-            }
+            long id = AppUtils.getAccountID(getApplicationContext());
+            String[] whereArgs = {String.valueOf(id)};
+            DBTaskUpdate task = new DBTaskUpdate(AccountEntry.TABLE_NAME_WITH_PREFIX, values,
+                    AccountEntry.DEFAULT_TABLE_SELECTION, whereArgs);
+            AsyncUpdate updateTask = mDatabaseManager.new AsyncUpdate();
+            updateTask.execute(task);
+        } else {
+            final Toast toast = new Toast(getApplicationContext());
+            toast.setGravity(Gravity.CENTER_VERTICAL|Gravity.BOTTOM, 0, 0);
+            toast.setDuration(Toast.LENGTH_LONG);
+            toast.setText(R.string.db_insert_error);
+            toast.show();
         }
     }
 
     @Override
-    public void updateProfileImage(String path) {
-        if (mDatabaseManager.getDataBase() != null) {
-            Cursor data = mDatabaseManager.select(AccountEntry.TABLE_NAME_WITH_PREFIX,
-                    AccountEntry.TABLE_PROJECTION, null,
-                    null, null, null, AccountEntry.DEFUALT_TABLE_ORDER);
-            if (data == null) {
-                Toast toast = Toast.makeText(getApplicationContext(), R.string.db_insert_error, Toast.LENGTH_SHORT);
-                toast.show();
-                return;
-            }
-            //First we need to create the image if not exist
+    public void updateProfileImage(final String path) {
+        if (mDatabaseManager != null) {
+            mDatabaseManager.establishDB();
+            long image_id = AppUtils.getAccountImageID(getApplicationContext());
+            String where = ImageEntry.DEFAULT_TABLE_SELECTION;
+            String[] whereArgs = {String.valueOf(image_id)};
             ContentValues values = new ContentValues();
-            values.put(AccountEntry.COLUMN_SYNC, false);
-
-            ContentValues imageValues = new ContentValues();
-            values.put(AccountEntry.COLUMN_IMAGE, path);
-            values.put(AccountEntry.COLUMN_SYNC, false);
-            if (data.getCount() == 0) {
-                //No Account created we need to set up a new account
-                long image_id = mDatabaseManager.insert(ImageEntry.TABLE_NAME_WITH_PREFIX, null, imageValues);
-                if (image_id == -1) {
-                    Toast toast = Toast.makeText(getApplicationContext(), R.string.db_insert_error, Toast.LENGTH_SHORT);
-                    toast.show();
-                    return;
-                }
-                values.put(AccountEntry.COLUMN_IMAGE, image_id);
-                mDatabaseManager.insert(AccountEntry.TABLE_NAME_WITH_PREFIX, null, values);
-            } else {
-                //We must update the current account
-                data.moveToFirst();
-                int image_id = data.getInt(data.getColumnIndex(AccountEntry.COLUMN_IMAGE));
-                String[] whereArgs = {String.valueOf(image_id)};
-                mDatabaseManager.update(ImageEntry.TABLE_NAME_WITH_PREFIX, imageValues,
-                        ImageEntry.DEFAULT_TABLE_SELECTION, whereArgs);
-            }
+            values.put(ImageEntry.COLUMN_PATH, path);
+            values.put(ImageEntry.COLUMN_SYNC, false);
+            DBTaskUpdate task = new DBTaskUpdate(ImageEntry.TABLE_NAME_WITH_PREFIX, values, where, whereArgs);
+            AsyncUpdate updateTask = mDatabaseManager.new AsyncUpdate();
+            updateTask.execute(task);
+        } else {
+            final Toast toast = new Toast(getApplicationContext());
+            toast.setGravity(Gravity.CENTER_VERTICAL|Gravity.BOTTOM, 0, 0);
+            toast.setDuration(Toast.LENGTH_LONG);
+            toast.setText(R.string.db_insert_error);
+            toast.show();
         }
-    }
-
-    @Override
-    public String getCurrentProfileName()
-    {
-        Cursor data = mDatabaseManager.select(AccountEntry.TABLE_NAME_WITH_PREFIX,
-                AccountEntry.TABLE_PROJECTION, null,
-                null, null, null, AccountEntry.DEFUALT_TABLE_ORDER);
-
-        if (data == null) {
-            return getResources().getString(R.string.profile_name_default);
-        }
-
-        if (data.getCount() == 0) {
-            return getResources().getString(R.string.profile_name_default);
-        }
-        data.moveToFirst();
-
-        return data.getString(data.getColumnIndex(AccountEntry.COLUMN_NAME));
-    }
-
-    @Override
-    public String getCurrentProfileImage()
-    {
-        Cursor data = mDatabaseManager.select(AccountEntry.TABLE_NAME_WITH_PREFIX,
-                AccountEntry.TABLE_PROJECTION, null,
-                null, null, null, AccountEntry.DEFUALT_TABLE_ORDER);
-
-        if (data == null) {
-            return getResources().getString(R.string.profile_image_default);
-        }
-
-        if (data.getCount() == 0) {
-            return getResources().getString(R.string.profile_image_default);
-        }
-        data.moveToFirst();
-
-        long id = data.getLong(data.getColumnIndex(AccountEntry._ID));
-
-        data = mDatabaseManager.query(AccountEntry.TABLE_JOIN_ACCOUNT_IMAGE_SQL, new String[]{String.valueOf(id)});
-
-        if (data.getCount() == 0) {
-            return getResources().getString(R.string.profile_image_default);
-        }
-
-        return data.getString(data.getColumnIndex(ImageEntry.TABLE_NAME + "." + ImageEntry.COLUMN_PATH));
     }
 
     @Override
     public void onDatabaseOpen(SQLiteDatabase db)
     {
+    }
+
+    @Override
+    public void onSelectReady(Cursor data) {
+    }
+
+    @Override
+    public void onInsertReady(long id) {
+    }
+
+    @Override
+    public void onUpdateReady(int rows) {
     }
 }

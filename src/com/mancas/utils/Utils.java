@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.content.Context;
@@ -23,10 +25,18 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+/**
+ * Factory that contains useful common methods
+ * @author Manuel Casas Barrado
+ * @version 1.0
+ */
 public class Utils
 {
     private static final String JPEG_FILE_PREFIX = "IMG_";
     private static final String JPEG_FILE_SUFFIX = ".jpg";
+    private static final String EMAIL_PATTERN = 
+            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+            + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
     public static void setListViewHeightBasedOnChildren(ListView listView) {
         BaseAdapter mAdapter = (BaseAdapter) listView.getAdapter(); 
@@ -169,5 +179,18 @@ public class Utils
         Uri uri = getImageUri(context, image);
 
         return getRealPathFromURI(context, uri);
+    }
+
+    /**
+     * Method that validates an email address
+     * @param email the email to validate
+     * @return true if the email argument matches the regular expression {@link #EMAIL_PATTERN}
+     */
+    public static boolean checkEmailAddress(String email)
+    {
+        Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+        Matcher matcher = pattern.matcher(email);
+        
+        return matcher.matches();
     }
 }
