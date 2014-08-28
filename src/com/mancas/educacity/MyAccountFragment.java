@@ -44,18 +44,54 @@ public class MyAccountFragment extends Fragment
   implements PickPictureDialog.PickPictureCallbacks,
   EditProfileNameDialog.EditProfileDialogCallbacks, DBHelperCallback
   {
+    /**
+     * Debug Tag for use logging debug output to LogCat
+     */
     public static final String TAG = "MyAccountFragment";
+    /**
+     * {@link ImageView} where the profile image will be placed
+     */
     private ImageView mProfileImage;
+    /**
+     * {@link TextView} where the user name will be displayed
+     */
     private TextView mProfileName;
+    /**
+     * {@link ImageButton} the user will click to change his name
+     */
     private ImageButton mEditNameBtn;
 
+    /**
+     * The album of the application where stores images
+     */
     private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
+    /**
+     * Current profile image path
+     */
     private String mImageProfilePath;
+    /**
+     * A reference to this object which is going to handler {@link PickPictureCallbacks}
+     */
     private final PickPictureCallbacks mPickPictureCallbacks = this;
+    /**
+     * A reference to this object which is going to handler {@link EditProfileDialogCallbacks}
+     */
     private final EditProfileDialogCallbacks mEditProfileCallbacks = this;
+    /**
+     * A instance of the listener which will take care of handle notifications of this class
+     */
     private MyAccountCallbacks mAccountListener;
+    /**
+     * Current user name
+     */
     private String mCurrentProfileName;
+    /**
+     * Tag used for save in a bundle the current profile image
+     */
     private final String PROFILE_IMAGE_KEY = "profile.image.key";
+    /**
+     * Tag used for save in a bundle the current user name
+     */
     private final String PROFILE_NAME_KEY = "profile.name.key";
     /**
      * An instance of {@link DBHelper} used to manage changes in user data
@@ -161,11 +197,16 @@ public class MyAccountFragment extends Fragment
         }
     }
 
-    /* Photo album for this application */
+    /**
+     *  Photo album for this application
+     **/
     private String getAlbumName() {
         return getString(R.string.album_name);
     }
 
+    /**
+     * Handler of the camera take photo action
+     */
     @Override
     public void onCameraBtnClick(DialogFragment dialog)
     {
@@ -203,6 +244,9 @@ public class MyAccountFragment extends Fragment
         }
     }
 
+    /**
+     * Handler of the galery import photo action
+     */
     @Override
     public void onGalleryBtnClick(DialogFragment dialog)
     {
@@ -237,7 +281,11 @@ public class MyAccountFragment extends Fragment
         }
     }
 
-    // Listener to update remote data
+    /**
+     * Callbacks to notify changes in the user account
+     * @author Manuel Casas Barrado
+     * @version 1.0
+     */
     public static interface MyAccountCallbacks {
         public void updateAccountName(String name);
         public void updateProfileImage(String path);

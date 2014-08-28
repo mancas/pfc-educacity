@@ -4,7 +4,6 @@ import java.util.List;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +14,13 @@ import android.widget.TextView;
 import com.mancas.educacity.R;
 import com.mancas.utils.DrawerItem;
 
+/**
+ * Adapter used for load items in the navigation drawer menu.
+ * It uses {@link DrawerItem} to decide the layout, image and label
+ * is use for each item
+ * @author Manuel Casas Barrado
+ * @version 1.0
+ */
 public class NavigationDrawerAdapter extends BaseAdapter
 {
     /**
@@ -67,7 +73,6 @@ public class NavigationDrawerAdapter extends BaseAdapter
     static class ListImageViewHolder {
         TextView textView;
         ImageView imageView;
-        View lastDivider;
         int position;
     }
 

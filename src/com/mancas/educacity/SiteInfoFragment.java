@@ -5,15 +5,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
 
 public class SiteInfoFragment extends Fragment
 {
+    /**
+     * Tag for share position between parent activity and a new instance of SiteInfoFragment
+     */
     public static final String FRAGMENT_BUNDLE_KEY = "fragment_position";
+    /**
+     * Reference to the object which is going to handle SiteInfo events
+     */
+    private SiteInfoCallback mCallbacks;
+
     /**
      * Returns a new instance of this fragment for the given section number.
      */
-    public static SiteInfoFragment newInstance(int position) {
+    public static SiteInfoFragment newInstance(int position, SiteInfoCallback callbacks) {
         SiteInfoFragment fragment = new SiteInfoFragment();
+        fragment.mCallbacks = callbacks;
         Bundle bundle = new Bundle();
         bundle.putInt(FRAGMENT_BUNDLE_KEY, position);
         fragment.setArguments(bundle);
@@ -38,11 +48,17 @@ public class SiteInfoFragment extends Fragment
         case 1:
             rootView =
               inflater.inflate(R.layout.educacity_tab_photos, container, false);
+              mCallbacks.onGridReady((GridView) rootView.findViewById(R.id.my_photos));
             break;
         case 2:
             break;
         }
 
         return rootView;
+    }
+
+    public interface SiteInfoCallback
+    {
+        public void onGridReady(GridView grid);
     }
 }

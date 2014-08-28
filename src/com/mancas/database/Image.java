@@ -1,7 +1,5 @@
 package com.mancas.database;
 
-import com.mancas.database.Account.AccountEntry;
-
 import android.provider.BaseColumns;
 
 /**
@@ -33,5 +31,6 @@ public final class Image
         };
         public static final String DEFUALT_TABLE_ORDER = ImageEntry._ID + " ASC";
         public static final String DEFAULT_TABLE_SELECTION = ImageEntry._ID + "=?";
+        public static final String SELECT_BY_SITE= ImageEntry.COLUMN_SITE_ID + "=?";
     }
 }

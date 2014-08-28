@@ -2,6 +2,8 @@ package com.mancas.utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,13 +16,16 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -32,12 +37,25 @@ import android.widget.ListView;
  */
 public class Utils
 {
+    /**
+     * Tag to specify the prefix of the photos taken by the application
+     */
     private static final String JPEG_FILE_PREFIX = "IMG_";
+    /**
+     * Tag to specify the extension of the photos taken by the application
+     */
     private static final String JPEG_FILE_SUFFIX = ".jpg";
+    /**
+     * Regular expression that check the validity or not of an email account
+     */
     private static final String EMAIL_PATTERN = 
             "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
             + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
+    /**
+     * Method that resizes a listview based on his children
+     * @param listView the ListView that must be dimensioned
+     */
     public static void setListViewHeightBasedOnChildren(ListView listView) {
         BaseAdapter mAdapter = (BaseAdapter) listView.getAdapter(); 
         if (mAdapter == null) {
@@ -57,6 +75,12 @@ public class Utils
         listView.requestLayout();
     }
 
+    /**
+     * Creates a new image file
+     * @param storageDir directory where the new file will be saved
+     * @return the new image file
+     * @throws IOException
+     */
     public static File createImageFile(File storageDir) throws IOException
     {
         // Create an image file name
@@ -66,6 +90,10 @@ public class Utils
         return image;
     }
 
+    /**
+     * Gets a file name based on the current date
+     * @return a new file name
+     */
     public static String getFileName()
     {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -74,6 +102,11 @@ public class Utils
         return imageFileName;
     }
 
+    /**
+     * Creates a new album directory if not exists
+     * @param storageDir
+     * @return the file object associated to the album directory
+     */
     public static File getAlbumDir(File storageDir)
     {
         if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
@@ -90,6 +123,11 @@ public class Utils
         return storageDir;
     }
 
+    /**
+     * Sets a picture defined in filePath argument in an ImageView
+     * @param filePath image absolute path that defined an image
+     * @param view ImageView where the image will be displayed
+     */
     public static void setPicture(String filePath, ImageView view)
     {
         /* There isn't enough memory to open up more than a couple camera photos */
@@ -124,6 +162,11 @@ public class Utils
         view.setImageBitmap(bitmap);
     }
 
+    /**
+     * Sets a square picture defined in filePath argument in an ImageView
+     * @param filePath image absolute path that defined an image
+     * @param view ImageView where the image will be displayed
+     */
     public static void setSquarePicture(String filePath, ImageView view)
     {
         /* There isn't enough memory to open up more than a couple camera photos */
@@ -158,6 +201,12 @@ public class Utils
         view.setImageBitmap(bitmap);
     }
 
+    /**
+     * Gets the URI from a Bitmap image
+     * @param context the context of the application
+     * @param image the Bitmap image
+     * @return the URI associated to the Bitmap image
+     */
     public static Uri getImageUri(Context context, Bitmap image) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
@@ -166,6 +215,12 @@ public class Utils
         return Uri.parse(path);
     }
 
+    /**
+     * Gets the absolute path from an URI
+     * @param context the context of the application
+     * @param uri the URI that describing the file
+     * @return the real path of the file
+     */
     public static String getRealPathFromURI(Context context, Uri uri) {
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null); 
         cursor.moveToFirst(); 
@@ -174,6 +229,12 @@ public class Utils
         return cursor.getString(idx); 
     }
 
+    /**
+     * Gets the real path form a Bitmap image
+     * @param context the context of the application
+     * @param image the Bitmap image
+     * @return the real path of the image
+     */
     public static String getRealPathFromBitmap(Context context, Bitmap image)
     {
         Uri uri = getImageUri(context, image);
@@ -192,5 +253,68 @@ public class Utils
         Matcher matcher = pattern.matcher(email);
         
         return matcher.matches();
+    }
+
+    /**
+     * Resize and returns a thumbnail of an image
+     * @param path the absolute path of the image which is going to be decoded
+     * @param width the width of the resulting thumbnail
+     * @param height the height of the resulting thumbnail
+     * @return a thumbnail of the image specified in path argument
+     */
+    public static Bitmap decodeFile(String path, int width, int height)
+    {
+        try {
+            File f = new File(path);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+
+            BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+            int scale = 1;
+            while (options.outWidth / scale / 2 >= width && options.outHeight / scale / 2 >= height) {
+                scale *= 2;
+            }
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            BitmapFactory.Options resultOptions = new BitmapFactory.Options();
+            resultOptions.inSampleSize = scale;
+
+            return BitmapFactory.decodeStream(new FileInputStream(f), null, resultOptions);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the screen width
+     * @param context the context of the application
+     * @return the screen width
+     */
+    public static int getScreenWidth(Context context)
+    {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        final Point p = new Point();
+
+        display.getSize(p);
+
+        return p.x;
+    }
+
+    /**
+     * Get the screen height
+     * @param context the context of the application
+     * @return the screen height
+     */
+    public static int getScreenHeight(Context context)
+    {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        final Point p = new Point();
+
+        display.getSize(p);
+
+        return p.y;
     }
 }

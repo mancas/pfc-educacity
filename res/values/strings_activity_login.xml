@@ -17,5 +17,8 @@
     <string name="error_not_equals_passwords">Las contraseñas no coinciden</string>
     <string name="error_field_required">Este campo es obligatorio</string>
     <string name="action_create_account">Crear cuenta</string>
+    
+    <string name="rest_already_used_email">El email pertenece a otra cuenta</string>
+    <string name="rest_password_length">La contraseña es demasiado corta</string>
 
 </resources>

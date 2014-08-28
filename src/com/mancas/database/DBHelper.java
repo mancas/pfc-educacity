@@ -4,6 +4,8 @@ import java.util.concurrent.ExecutionException;
 
 import com.mancas.database.Account.AccountEntry;
 import com.mancas.database.Image.ImageEntry;
+import com.mancas.database.Site.SiteEntry;
+import com.mancas.utils.AppUtils;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -33,7 +35,7 @@ public class DBHelper
     /**
      * Tag that define database version
      */
-    public static final int DB_VERSION = 10;
+    public static final int DB_VERSION = 1;
     /**
      * An instance of the open database
      */
@@ -67,17 +69,16 @@ public class DBHelper
      */
     public static final String TAG = "DBHelper";
     /**
-     * Flag for keep track of the asynchronous task status
+     * The current instance of this class because this class is a singleton
      */
-    private static boolean mWorking = false;
     private static volatile DBHelper instance = null;
 
     /**
      * Returns or create a new instance of DBHelper
      * @param context the context of the application
-     * @param an instance of the class which is going to handle events
+     * @param callbacks an instance of the class which is going to handle events
      */
-    public static DBHelper getInstance(Context context, DBHelperCallback callbacks)
+    public static synchronized DBHelper getInstance(Context context, DBHelperCallback callbacks)
     {
         if (instance == null) {
             instance = new DBHelper(context, callbacks);
@@ -86,7 +87,6 @@ public class DBHelper
         }
 
         return instance;
-        //establishDB();
     }
     
     /**
@@ -101,7 +101,7 @@ public class DBHelper
     /**
      * Creates a helper to manage transitions to database
      * @param context the context of the application
-     * @param an instance of the class which is going to handle events
+     * @param callbacks an instance of the class which is going to handle events
      */
     public DBHelper(Context context, DBHelperCallback callbacks)
     {
@@ -119,14 +119,17 @@ public class DBHelper
     {
         private static final String DB_TABLE_ACCOUNT =
                 "CREATE TABLE " + DBHelper.DB_PREFIX + AccountEntry.TABLE_NAME +
-                " (" + AccountEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AccountEntry.COLUMN_NAME + " TEXT," +
+                " (" + AccountEntry._ID + " INTEGER PRIMARY KEY, " + AccountEntry.COLUMN_NAME + " TEXT," +
                 AccountEntry.COLUMN_EMAIL + " TEXT NOT NULL," +
                 AccountEntry.COLUMN_IMAGE + " TEXT," + AccountEntry.COLUMN_SYNC + " INTEGER DEFAULT 0);";
         private static final String DB_TABLE_IMAGES = 
                 "CREATE TABLE " + DBHelper.DB_PREFIX + ImageEntry.TABLE_NAME +
-                " (" + ImageEntry._ID + " INTEGER PRIMARY KEY," + ImageEntry.COLUMN_PATH + " TEXT NOT NULL," +
+                " (" + ImageEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + ImageEntry.COLUMN_PATH + " TEXT NOT NULL," +
                 ImageEntry.COLUMN_SITE_ID + " INTEGER," + ImageEntry.COLUMN_PUBLIC + " INTEGER DEFAULT 1," +
                 ImageEntry.COLUMN_SYNC + " INTEGER DEFAULT 0);";
+        private static final String DB_TABLE_SITES = 
+                "CREATE TABLE " + DBHelper.DB_PREFIX + SiteEntry.TABLE_NAME +
+                " (" + SiteEntry._ID + " INTEGER PRIMARY KEY," + SiteEntry.COLUMN_NAME + " TEXT NOT NULL);";
 
         /**
          * Create a helper object to create, open, and/or manage a database.
@@ -143,6 +146,7 @@ public class DBHelper
             try {
                 db.execSQL(DB_TABLE_ACCOUNT);
                 db.execSQL(DB_TABLE_IMAGES);
+                db.execSQL(DB_TABLE_SITES);
             } catch (SQLException e) {
                 Log.e(DBHelper.TAG, e.getMessage());
             }
@@ -172,7 +176,6 @@ public class DBHelper
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mWorking = true;
         }
 
         @Override
@@ -188,7 +191,6 @@ public class DBHelper
         @Override
         protected void onPostExecute(SQLiteDatabase database) {
             db = database;
-            mWorking = false;
             callbacks.onDatabaseOpen(database);
         }
     }
@@ -312,7 +314,7 @@ public class DBHelper
      * @throws InterruptedException if the asynchronous task that perform the database opening work has been interrupted
      * @throws ExecutionException if the asynchronous task that perform the database opening work has crashed
      */
-    public long createNewAccount(String email, String name, String profile_image)
+    public long createNewAccount(int id, String email, String name, String profile_image)
             throws InterruptedException, ExecutionException
     {
         ContentValues profileImage = new ContentValues();
@@ -323,17 +325,22 @@ public class DBHelper
             return -1;
         }
         ContentValues account = new ContentValues();
+        account.put(AccountEntry._ID, id);
         account.put(AccountEntry.COLUMN_EMAIL, email);
         account.put(AccountEntry.COLUMN_IMAGE, image);
         account.put(AccountEntry.COLUMN_SYNC, false);
-        long id = insert(AccountEntry.TABLE_NAME_WITH_PREFIX, null, account);
-        if (id != -1) {
-            return id;
+        long insertedID = insert(AccountEntry.TABLE_NAME_WITH_PREFIX, null, account);
+        if (insertedID != -1) {
+            return insertedID;
         }
 
         return -1;
     }
 
+    /**
+     * @deprecated use {@link AppUtils#getAccountImageID(Context)} instead
+     * @return the current profile image ID or -1 if there is no profile image
+     */
     public long getProfileImageId()
     {
         Cursor data = select(AccountEntry.TABLE_NAME_WITH_PREFIX, AccountEntry.TABLE_PROJECTION,
@@ -346,6 +353,12 @@ public class DBHelper
         return -1;
     }
 
+    /**
+     * Gets the current profile image path
+     * @param task an instance of {@link DBTaskQuery} that contains the necessary data
+     * to perform a database query
+     * @return the current profile image path or an empty string if no image is found
+     */
     public String getProfileImagePath(DBTaskQuery task)
     {
         AsyncSelect selectTask = new AsyncSelect();
@@ -366,6 +379,12 @@ public class DBHelper
         return "";
     }
 
+    /**
+     * Gets the current profile name
+     * @param task an instance of {@link DBTaskQuery} that contains the necessary data
+     * to perform a database query
+     * @return the current profile name or an empty string if no image is found
+     */
     public String getProfileName(DBTaskQuery task)
     {
         AsyncSelect selectTask = new AsyncSelect();

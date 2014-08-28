@@ -120,6 +120,9 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
+    /**
+     * Initializes the action bar with the application title and the standar navigation mode
+     */
     public void restoreActionBar() {
         ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
@@ -132,6 +135,7 @@ public class MainActivity extends FragmentActivity implements
      * he must be enter login data or register in order to access to his account
      */
     private void checkAccount() {
+        //TODO MAKE LOGIN WITH REST
         long accountId = AppUtils.getAccountID(getApplicationContext());
         if (accountId == -1) {
             //No accounts registered
@@ -167,6 +171,10 @@ public class MainActivity extends FragmentActivity implements
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Place a new fragment in the screen and replaces the older one
+     * @param fragment the new fragment to be displayed
+     */
     public void loadFragment(Fragment fragment)
     {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -193,6 +201,10 @@ public class MainActivity extends FragmentActivity implements
        }
     }
 
+    /**
+     * Updates the account name and mark it as not synchronized.
+     * @param name the new name choosen by the user
+     */
     @Override
     public void updateAccountName(final String name) {
         if (mDatabaseManager != null) {
@@ -214,6 +226,10 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
+    /**
+     * Stores in database the new profile image of the user
+     * @param path the path of the new profile image
+     */
     @Override
     public void updateProfileImage(final String path) {
         if (mDatabaseManager != null) {

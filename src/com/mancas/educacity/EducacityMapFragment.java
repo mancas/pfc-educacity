@@ -43,7 +43,9 @@ public class EducacityMapFragment extends Fragment
      * A pointer to the current callbacks instance (the Activity).
      */
     private EducacityMapCallbacks mCallbacks;
-
+    /**
+     * Context of the application where the fragment will be placed
+     */
     private FragmentActivity mContext;
 
     private GoogleMap mMap;

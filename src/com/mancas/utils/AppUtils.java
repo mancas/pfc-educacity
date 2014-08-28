@@ -16,6 +16,8 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -48,6 +50,18 @@ public class AppUtils
      * Tag for handle gallery pick picture action
      */
     public static final int TAKE_IMAGE_FROM_GALLERY = 2;
+    /**
+     * Tag for define the number of columns of a grid view
+     */
+    public static final int GRID_NUM_COLUMNS = 2;
+    /**
+     * Tag for define the vertical and horizontal spacing between items in a grid view
+     */
+    public static final int GRID_SPACING = 10;
+    /**
+     * Tag for define the external padding of a grid view
+     */
+    public static final int GRID_PADDING = 10;
 
     /**
      * Method that check if there is a preferred application to perform the intent
@@ -246,5 +260,21 @@ public class AppUtils
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         activity.sendBroadcast(mediaScanIntent);
+    }
+
+    /**
+     * Check if the user is currently connected to the network
+     * @param context the context of the application
+     * @return true if the user has network connection, false if not
+     */
+    public static boolean checkNetworkConnection(Context context)
+    {
+        ConnectivityManager manager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = manager.getActiveNetworkInfo();
+        if (netInfo == null || !netInfo.isConnected()) {
+            return false;
+        }
+        return true;
     }
 }

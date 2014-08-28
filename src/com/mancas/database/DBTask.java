@@ -7,6 +7,9 @@ package com.mancas.database;
  */
 public abstract class DBTask
 {
+    /**
+     * Table name
+     */
     private String mTableName;
 
     public DBTask(String table)
