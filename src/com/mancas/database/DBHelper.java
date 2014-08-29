@@ -121,7 +121,9 @@ public class DBHelper
                 "CREATE TABLE " + DBHelper.DB_PREFIX + AccountEntry.TABLE_NAME +
                 " (" + AccountEntry._ID + " INTEGER PRIMARY KEY, " + AccountEntry.COLUMN_NAME + " TEXT," +
                 AccountEntry.COLUMN_EMAIL + " TEXT NOT NULL," +
-                AccountEntry.COLUMN_IMAGE + " TEXT," + AccountEntry.COLUMN_SYNC + " INTEGER DEFAULT 0);";
+                AccountEntry.COLUMN_IMAGE + " TEXT," + AccountEntry.COLUMN_ACCESS_TOKEN + " TEXT," +
+                AccountEntry.COLUMN_REFRESH_TOKEN + " TEXT," +
+                AccountEntry.COLUMN_SYNC + " INTEGER DEFAULT 0);";
         private static final String DB_TABLE_IMAGES = 
                 "CREATE TABLE " + DBHelper.DB_PREFIX + ImageEntry.TABLE_NAME +
                 " (" + ImageEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + ImageEntry.COLUMN_PATH + " TEXT NOT NULL," +
@@ -314,7 +316,7 @@ public class DBHelper
      * @throws InterruptedException if the asynchronous task that perform the database opening work has been interrupted
      * @throws ExecutionException if the asynchronous task that perform the database opening work has crashed
      */
-    public long createNewAccount(int id, String email, String name, String profile_image)
+    public long createNewAccount(int id, String email, String name, String profile_image, String access_token, String refresh_token)
             throws InterruptedException, ExecutionException
     {
         ContentValues profileImage = new ContentValues();
@@ -328,10 +330,20 @@ public class DBHelper
         account.put(AccountEntry._ID, id);
         account.put(AccountEntry.COLUMN_EMAIL, email);
         account.put(AccountEntry.COLUMN_IMAGE, image);
+        account.put(AccountEntry.COLUMN_ACCESS_TOKEN, access_token);
+        account.put(AccountEntry.COLUMN_REFRESH_TOKEN, refresh_token);
         account.put(AccountEntry.COLUMN_SYNC, false);
         long insertedID = insert(AccountEntry.TABLE_NAME_WITH_PREFIX, null, account);
-        if (insertedID != -1) {
-            return insertedID;
+        if (insertedID == -1) {
+            return -1;
+        }
+
+        Cursor data = select(AccountEntry.TABLE_NAME_WITH_PREFIX, AccountEntry.TABLE_PROJECTION,
+                null, null, null, null,  AccountEntry.DEFUALT_TABLE_ORDER);
+        if (data != null && data.getCount() > 0) {
+            data.moveToFirst();
+            long image_id = data.getLong(data.getColumnIndex(AccountEntry.COLUMN_IMAGE));
+            return image_id;
         }
 
         return -1;

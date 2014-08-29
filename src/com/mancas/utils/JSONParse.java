@@ -6,6 +6,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.mancas.models.RegisterModel;
+
 import android.util.Log;
 
 public class JSONParse {
@@ -16,6 +18,7 @@ public class JSONParse {
     public static final String REGISTER_PASSWORD_TAG = "password";
     public static final String REGISTER_ID_TAG = "id";
     public static final String ACCESS_TOKEN_TAG = "access_token";
+    public static final String REFRESH_TOKEN_TAG = "refresh_token";
     public static final int SUCCESS_CODE = 200;
     public static final int ERROR_CODE = 400;
 
@@ -26,13 +29,15 @@ public class JSONParse {
      */
     public static RegisterModel checkRegister(String register)
     {
-        RegisterModel errors = new RegisterModel();
+        RegisterModel model = new RegisterModel();
         try {
             JSONObject json = new JSONObject(register);
             int code = json.getInt(REGISTER_CODE_TAG);
             switch (code) {
             case SUCCESS_CODE:
-                errors.setId(json.getInt(REGISTER_ID_TAG));
+                model.setId(json.getInt(REGISTER_ID_TAG));
+                model.setAccessToken(json.getString(ACCESS_TOKEN_TAG));
+                model.setRefreshToken(json.getString(REFRESH_TOKEN_TAG));
                 break;
             case ERROR_CODE:
                 JSONObject node = json.getJSONObject(REGISTER_ERRORS_TAG);
@@ -42,19 +47,19 @@ public class JSONParse {
                 String password = node.getString(REGISTER_PASSWORD_TAG);
                 if (isJSONObject(email)) {
                     //We can assume here that email property has errors
-                    errors.setEmail(true);
+                    model.setEmail(true);
                 }
 
                 if (isJSONObject(password)) {
-                    errors.setPassword(true);
+                    model.setPassword(true);
                 }
                 break;
             }
         } catch (JSONException e) {
             Log.d("JSON", e.getMessage());
-            errors.setOther(true);
+            model.setOther(true);
         }
-        return errors;
+        return model;
     }
 
     /**

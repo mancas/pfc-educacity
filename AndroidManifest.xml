@@ -77,16 +77,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.mancas.educacity.LoginActivity" />
         </activity>
-        <activity
-            android:name="com.mancas.educacity.FullScreenViewActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_full_screen_view"
-            android:parentActivityName="com.mancas.educacity.InfoActivity"
-            android:theme="@style/FullscreenTheme" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.mancas.educacity.InfoActivity" />
-        </activity>
     </application>
 
 </manifest>

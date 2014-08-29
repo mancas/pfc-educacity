@@ -12,6 +12,7 @@
     <string name="album_name">Educacity Images</string>
     <string name="retry">Reintentar</string>
     <string name="title_activity_register">Regístrate!</string>
+    <string name="create_account_success">¡Cuenta creada con éxito!</string>
 
     <!-- Dialogs -->
     <string name="enable_gps">Necesitas activar el GPS, ¿quieres hacerlo ahora?</string>

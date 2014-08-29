@@ -22,17 +22,16 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.mancas.database.DBHelper;
 import com.mancas.database.DBHelper.DBHelperCallback;
 import com.mancas.database.DBHelper.DBOpenHelper;
 import com.mancas.dialogs.NoNetworkDialog;
+import com.mancas.models.RegisterModel;
 import com.mancas.utils.AppUtils;
 import com.mancas.utils.HTTPRequestHelper;
 import com.mancas.utils.HTTPRequestHelper.HTTPResponseCallback;
 import com.mancas.utils.JSONParse;
-import com.mancas.utils.RegisterModel;
 import com.mancas.utils.Utils;
 
 /**
@@ -84,6 +83,10 @@ public class RegisterActivity extends Activity
      * Keep track of the register task to ensure we can cancel it if requested.
      */
     private UserRegisterTask mRegisterTask = null;
+    /**
+     * Keep track of the register in app task to ensure we can cancel it if requested.
+     */
+    private UserRegisterInAppTask mRegisterInAppTask = null;
     /**
      * URL used to register users
      */
@@ -238,16 +241,16 @@ public class RegisterActivity extends Activity
      * Represents an asynchronous task used to register
      * a new the user.
      */
-    public class UserRegisterTask extends AsyncTask<Void, Void, Boolean> implements DBHelperCallback, HTTPResponseCallback {
-        private DBHelper helper;
+    public class UserRegisterTask extends AsyncTask<Void, Void, RegisterModel> implements DBHelperCallback, HTTPResponseCallback {
+        private RegisterModel mModel;
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected RegisterModel doInBackground(Void... params) {
             boolean connection = AppUtils.checkNetworkConnection(getApplicationContext());
             if (!connection) {
                 NoNetworkDialog dialog = new NoNetworkDialog();
                 dialog.show(getFragmentManager(), TAG);
                 this.cancel(true);
-                return false;
+                return null;
             }
             JSONObject httpParams = new JSONObject();
             JSONObject data = new JSONObject();
@@ -256,51 +259,23 @@ public class RegisterActivity extends Activity
                 data.put("password", mPassword);
                 httpParams.put("user", data);
             } catch (JSONException e) {
-                return false;
+                return null;
             }
             HTTPRequestHelper httpHelper = new HTTPRequestHelper(httpParams, this);
             httpHelper.performPost(REGISTER_URL);
-            return true;
+            return mModel;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final RegisterModel model) {
             mRegisterTask = null;
-            AppUtils.showProgress(getApplicationContext(), mRegisterStatusView, mRegisterFormView, false);
-
-            if (success) {
-                setResult(LoginActivity.REGISTER_REQUEST, null);
-                finish();
-            } else {
-                Toast toast = Toast.makeText(getApplicationContext(), R.string.db_insert_error, Toast.LENGTH_SHORT);
-                toast.show();
-            }
+            displayErrorsIfNeeded(model);
         }
 
         @Override
         protected void onCancelled() {
             mRegisterTask = null;
             AppUtils.showProgress(getApplicationContext(), mRegisterStatusView, mRegisterFormView, false);
-        }
-
-        @SuppressWarnings("deprecation")
-        private void registerAppUser(int id)
-        {
-          //We must open the db here because of the establishDB() method
-            //is another async task and doesn't work
-            helper = DBHelper.getInstance(getApplicationContext(), this);
-            DBOpenHelper opener = helper.getDBOpenHelper();
-            helper.setDataBase(opener.getWritableDatabase());
-            try {
-                helper.createNewAccount(id, mEmail, "", "");
-                AppUtils.setAccountID(getApplicationContext(), id);
-                long image_id = helper.getProfileImageId();
-                AppUtils.setAccountImageID(getApplicationContext(), image_id);
-            } catch (InterruptedException e) {
-                return;
-            } catch (ExecutionException e) {
-                return;
-            }
         }
 
         @Override
@@ -324,18 +299,78 @@ public class RegisterActivity extends Activity
             Log.d(TAG, response);
             // { "code":200, "email":"ma@ma.com"}
             if (!response.isEmpty()) {
-                RegisterModel model = JSONParse.checkRegister(response);
-                Log.d(TAG, model.getEmail() + "");
-                if (model.hasErrors()) {
-                    displayErrors(model);
-                } else {
-                    registerAppUser(model.getId());
-                }
+                mModel = JSONParse.checkRegister(response);
             } else {
-                Toast toast = Toast.makeText(getApplicationContext(), R.string.error_network_response, Toast.LENGTH_SHORT);
-                toast.show();
+                AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.error_network_response));
                 this.cancel(true);
             }
+        }
+    }
+
+    /**
+     * Represents an asynchronous task used to register
+     * a new the user.
+     */
+    public class UserRegisterInAppTask extends AsyncTask<RegisterModel, Void, Boolean> implements DBHelperCallback {
+        private DBHelper helper;
+        @Override
+        protected Boolean doInBackground(RegisterModel... params) {
+            RegisterModel model = params[0];
+            helper = DBHelper.getInstance(getApplicationContext(), this);
+            DBOpenHelper opener = helper.getDBOpenHelper();
+            helper.setDataBase(opener.getWritableDatabase());
+            try {
+                long image_id = helper.createNewAccount(model.getId(), mEmail, "", "", model.getAccessToken(), model.getRefreshToken());
+                if (image_id == -1) {
+                    this.cancel(true);
+                    return false;
+                }
+                AppUtils.setAccountID(getApplicationContext(), model.getId());
+                AppUtils.setAccountImageID(getApplicationContext(), image_id);
+            } catch (InterruptedException e) {
+                this.cancel(false);
+                return false;
+            } catch (ExecutionException e) {
+                this.cancel(false);
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mRegisterInAppTask = null;
+            AppUtils.showProgress(getApplicationContext(), mRegisterStatusView, mRegisterFormView, false);
+
+            if (success) {
+                setResult(LoginActivity.REGISTER_REQUEST, null);
+                finish();
+            } else {
+                AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.db_insert_error));
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mRegisterInAppTask = null;
+            AppUtils.showProgress(getApplicationContext(), mRegisterStatusView, mRegisterFormView, false);
+            AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.db_insert_error));
+        }
+        @Override
+        public void onDatabaseOpen(SQLiteDatabase database) {
+        }
+
+        @Override
+        public void onSelectReady(Cursor data) {
+        }
+
+        @Override
+        public void onInsertReady(long id) {
+        }
+
+        @Override
+        public void onUpdateReady(int rows) {
         }
     }
 
@@ -343,7 +378,7 @@ public class RegisterActivity extends Activity
      * Sets the necessary errors related to a model
      * @param model the model containing the errors to be displayed
      */
-    private void displayErrors(RegisterModel model) {
+    private void displayErrorsIfNeeded(RegisterModel model) {
         if (model.hasErrors()) {
             if (model.getEmail()) {
                 mEmailView.setError(getResources().getString(R.string.rest_already_used_email));
@@ -352,6 +387,10 @@ public class RegisterActivity extends Activity
             if (model.getPassword()) {
                 mPasswordView.setError(getResources().getString(R.string.rest_password_length));
             }
+            AppUtils.showProgress(getApplicationContext(), mRegisterStatusView, mRegisterFormView, false);
+        } else {
+            mRegisterInAppTask = new UserRegisterInAppTask();
+            mRegisterInAppTask.execute(model);
         }
     }
 }

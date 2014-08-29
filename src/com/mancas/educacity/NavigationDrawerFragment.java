@@ -70,7 +70,7 @@ public class NavigationDrawerFragment extends Fragment {
 
     static {
         mDrawerItems.add(
-          new DrawerItem(R.layout.educacity_list_with_icon, R.drawable.ic_action_place, R.string.drawer_map));
+          new DrawerItem(R.layout.educacity_list_with_icon, R.drawable.ic_action_map, R.string.drawer_map));
         mDrawerItems.add(
           new DrawerItem(R.layout.educacity_list_with_icon, R.drawable.ic_action_place, R.string.drawer_my_sites));
         mDrawerItems.add(
@@ -155,7 +155,7 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerToggle = new ActionBarDrawerToggle(
                 getActivity(),                    /* host Activity */
                 mDrawerLayout,                    /* DrawerLayout object */
-                R.drawable.ic_drawer,             /* nav drawer image to replace 'Up' caret */
+                R.drawable.ic_navigation_drawer,             /* nav drawer image to replace 'Up' caret */
                 R.string.navigation_drawer_open,  /* "open drawer" description for accessibility */
                 R.string.navigation_drawer_close  /* "close drawer" description for accessibility */
         ) {
@@ -285,11 +285,6 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        if (item.getItemId() == R.id.action_example) {
-            Toast.makeText(getActivity(), "Example action.", Toast.LENGTH_SHORT).show();
             return true;
         }
 

@@ -3,6 +3,7 @@ package com.mancas.utils;
 import java.io.File;
 import java.util.List;
 
+import com.mancas.educacity.R;
 import com.mancas.educacity.SettingsActivity;
 
 import android.animation.Animator;
@@ -24,6 +25,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Toast;
 
 /**
  * Class with some useful methods to treat with system applications
@@ -276,5 +278,16 @@ public class AppUtils
             return false;
         }
         return true;
+    }
+
+    /**
+     * Shows a toast with the a specific message
+     * @param context the context of the application
+     * @param msg message that will be displayed in the Toast
+     */
+    public static void showToast(Context context, String msg)
+    {
+        Toast toast = Toast.makeText(context, msg, Toast.LENGTH_SHORT);
+        toast.show();
     }
 }

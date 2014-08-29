@@ -23,13 +23,16 @@ public final class Account
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_IMAGE = "image_id";
         public static final String COLUMN_SYNC = "sync";
-        public static final String COLUMN_TOKEN = "token";
+        public static final String COLUMN_ACCESS_TOKEN = "access_token";
+        public static final String COLUMN_REFRESH_TOKEN = "refresh_token";
         public static final String TABLE_NAME_WITH_PREFIX = DBHelper.DB_PREFIX + AccountEntry.TABLE_NAME;
         public static final String[] TABLE_PROJECTION = {
             AccountEntry._ID,
             AccountEntry.COLUMN_EMAIL,
             AccountEntry.COLUMN_NAME,
             AccountEntry.COLUMN_IMAGE,
+            AccountEntry.COLUMN_ACCESS_TOKEN,
+            AccountEntry.COLUMN_REFRESH_TOKEN,
             AccountEntry.COLUMN_SYNC
         };
         public static final String DEFUALT_TABLE_ORDER = AccountEntry.COLUMN_NAME + " DESC";

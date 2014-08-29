@@ -107,7 +107,7 @@ public class MainActivity extends FragmentActivity implements
             break;
         case 2:
             //Mi cuenta
-            checkAccount();
+            checkLogin();
             break;
         case 3:
             //Sincronizar
@@ -134,7 +134,7 @@ public class MainActivity extends FragmentActivity implements
      * Check if the current user is logged into the application if not,
      * he must be enter login data or register in order to access to his account
      */
-    private void checkAccount() {
+    private void checkLogin() {
         //TODO MAKE LOGIN WITH REST
         long accountId = AppUtils.getAccountID(getApplicationContext());
         if (accountId == -1) {

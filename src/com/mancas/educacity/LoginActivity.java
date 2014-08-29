@@ -230,8 +230,7 @@ public class LoginActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && requestCode == REGISTER_REQUEST) {
-            Toast toast = Toast.makeText(getApplicationContext(), R.string.register_progress_signing_in, Toast.LENGTH_SHORT);
-            toast.show();
+            AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.create_account_success));
         }
     }
 

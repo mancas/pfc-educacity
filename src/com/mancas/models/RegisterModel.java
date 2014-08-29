@@ -1,4 +1,4 @@
-package com.mancas.utils;
+package com.mancas.models;
 
 /**
  * @author Manuel Casas Barrado
@@ -7,8 +7,10 @@ package com.mancas.utils;
 public class RegisterModel {
     private boolean mEmail;
     private boolean mPassword;
-    private int mId;
     private boolean mOther;
+    private int mId;
+    private String mAccessToken;
+    private String mRefreshToken;
 
     public RegisterModel() {
         mEmail = false;
@@ -86,6 +88,42 @@ public class RegisterModel {
     public void setOther(boolean other)
     {
         mOther = other;
+    }
+
+    /**
+     * Gets the access token
+     * @return the access token of the user
+     */
+    public String getAccessToken()
+    {
+        return mAccessToken;
+    }
+
+    /**
+     * Sets the access token
+     * @param token the new access token for the new user
+     */
+    public void setAccessToken(String token)
+    {
+        mAccessToken = token;
+    }
+
+    /**
+     * Gets the refresh token
+     * @return the refresh token of the user
+     */
+    public String getRefreshToken()
+    {
+        return mRefreshToken;
+    }
+
+    /**
+     * Sets the refresh token
+     * @param token the new refresh token for the new user
+     */
+    public void setRefreshToken(String token)
+    {
+        mRefreshToken = token;
     }
 
     /**
