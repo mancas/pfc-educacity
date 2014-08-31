@@ -72,6 +72,10 @@ public class SaveStateMapFragment extends SupportMapFragment implements
     public static final String PROXIMITY_ALERT_TITLE = "PROXIMITY_ALERT_TITLE";
     public static final int PROXIMITY_ALERT_EXPIRATION = -1;
     public static final int PROXIMITY_ALERT_RADIUS = 20;
+    /**
+     * Tag for identify extras in an Intent
+     */
+    public static final String SITE_TITLE = "SITE_TITLE";
 
 
     @Override
@@ -181,6 +185,7 @@ public class SaveStateMapFragment extends SupportMapFragment implements
     public boolean onMarkerClick(Marker marker) {
         Intent intent = new Intent(getActivity(), InfoActivity.class);
         intent.putExtra(SITE_CLICKED, mMarkers.get(marker.getId()));
+        intent.putExtra(SITE_TITLE, marker.getTitle());
         startActivity(intent);
 
         return true;

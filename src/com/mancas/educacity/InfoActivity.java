@@ -46,6 +46,7 @@ import com.mancas.album.storage.BaseAlbumDirFactory;
 import com.mancas.album.storage.FroyoAlbumDirFactory;
 import com.mancas.database.DBHelper;
 import com.mancas.database.DBHelper.AsyncInsert;
+import com.mancas.database.DBHelper.AsyncInsertSiteIfNeeded;
 import com.mancas.database.DBHelper.DBHelperCallback;
 import com.mancas.database.DBTaskInsert;
 import com.mancas.database.DBTaskQuery;
@@ -144,6 +145,10 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
      * ID of the current site
      */
     private Integer mSiteId;
+    /**
+     * Title of the current site
+     */
+    private String mSiteTitle;
     
     public static String GET_SITE_URL = "http://rest.educacity-sevilla.com/site/";
 
@@ -153,6 +158,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         setContentView(R.layout.activity_info);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         mSiteId = getIntent().getIntExtra(SaveStateMapFragment.SITE_CLICKED, 1);
+        mSiteTitle = getIntent().getStringExtra(SaveStateMapFragment.SITE_TITLE);
         GET_SITE_URL += mSite;
 
         // Set up the action bar.
@@ -377,7 +383,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
     private void saveImage(String path) {
         ContentValues image = new ContentValues();
         image.put(ImageEntry.COLUMN_PATH, path);
-        image.put(ImageEntry.COLUMN_SITE_ID, 1);
+        image.put(ImageEntry.COLUMN_SITE_ID, mSiteId);
         image.put(ImageEntry.COLUMN_SYNC, false);
         String publicProfile = AppUtils.readPreference(getApplicationContext(), SettingsActivity.PUBLIC_PROFILE_KEY,
                 SettingsActivity.BOOL_TYPE);
@@ -385,6 +391,11 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         DBTaskInsert task = new DBTaskInsert(ImageEntry.TABLE_NAME_WITH_PREFIX, null, image);
         AsyncInsert insertTask = mDatabaseManager.new AsyncInsert();
         insertTask.execute(task);
+        AsyncInsertSiteIfNeeded siteTask = mDatabaseManager.new AsyncInsertSiteIfNeeded();
+        Site site = new Site();
+        site.setId(mSiteId);
+        site.setTitle(mSiteTitle);
+        siteTask.execute(site);
     }
 
     @Override

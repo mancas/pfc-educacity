@@ -4,8 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.mancas.adapters.MySitesAdapter;
+import com.mancas.database.DBHelper;
+import com.mancas.database.DBHelper.DBHelperCallback;
+import com.mancas.database.Site.SiteEntry;
+import com.mancas.database.DBTaskQuery;
+import com.mancas.models.Site;
+
 import android.app.Fragment;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,38 +22,36 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
-public class MySitesFragment extends Fragment
+public class MySitesFragment extends Fragment implements DBHelperCallback
 {
     public static final String TAG = "My Sites Fragment";
+    /**
+     * An instance of {@link DBHelper} used to manage changes in user data
+     */
+    private DBHelper mDatabaseManager;
+    /**
+     * ListView where the user sites will be displayed
+     */
     private ListView mSitesListView;
-    private static List<String> mItems = new ArrayList<String>();
-    static {
-        mItems.add("Giralda");
-        mItems.add("Torre del oro");
-        mItems.add("Acueducto Luis montoto");
-        mItems.add("Giraldillo");
-        mItems.add("Rampa");
-        mItems.add("Parque Maria Luisa");
-        mItems.add("Sevilla Este");
-        mItems.add("Los remedios");
-        mItems.add("Aeropuerto");
-        mItems.add("Archivo de Indias");
-        mItems.add("Tienda Guiri");
-        mItems.add("Reina Mercedes");
-        mItems.add("El Salvador");
-        mItems.add("Nervión");
-        mItems.add("Los Arcos");
-        mItems.add("Zona Este");
-        mItems.add("Palacio de Congresos");
-        mItems.add("La conchinchina");
-        mItems.add("Aquapark");
-    }
+    /**
+     * LinearLayout to display a warning message when the user has no sites
+     */
+    private LinearLayout mNoSites;
+    /**
+     * List of sites where the user has taken photos
+     */
+    private static List<Site> mItems = new ArrayList<Site>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mDatabaseManager = DBHelper.getInstance(getActivity().getApplicationContext(), this);
+        DBTaskQuery task = new DBTaskQuery(SiteEntry.TABLE_NAME_WITH_PREFIX,
+                SiteEntry.TABLE_PROJECTION, null, null, null, null, SiteEntry.DEFUALT_TABLE_ORDER);
+        mDatabaseManager.new AsyncSelect().execute(task);
     }
 
     public void onResume()
@@ -62,9 +69,8 @@ public class MySitesFragment extends Fragment
     {
         View rootView = inflater.inflate(R.layout.educacity_my_sites, container, false);
         mSitesListView = (ListView) rootView.findViewById(R.id.sites_list);
-        Collections.sort(mItems);
         mSitesListView.setAdapter(
-          new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, mItems));
+          new MySitesAdapter(getActivity().getApplicationContext(), mItems));
 
         mSitesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -72,27 +78,52 @@ public class MySitesFragment extends Fragment
                 selectItem(position);
             }
         });
+        mNoSites = (LinearLayout) rootView.findViewById(R.id.no_sites);
 
         return rootView;
     }
-    
+
     public void selectItem(int position)
     {
         // We must retrieve the ID from the selected item and start a new activity
+        MySitesAdapter adapter = (MySitesAdapter) mSitesListView.getAdapter();
+        Site site = adapter.getItem(position);
         Intent intent = new Intent(getActivity(), InfoActivity.class);
+        intent.putExtra(SaveStateMapFragment.SITE_CLICKED, site.getId());
+        intent.putExtra(SaveStateMapFragment.SITE_TITLE, site.getTitle());
         startActivity(intent);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        /*try {
-            Fragment fragment =  getActivity().getFragmentManager().findFragmentById(R.id.container);
-            if (fragment != null) getFragmentManager().beginTransaction().remove(fragment).commit();
-        } catch (IllegalStateException e) {
-            //handle this situation because you are necessary will get 
-            //an exception here :-(
-        	Log.d(TAG, e.getMessage());
-        }*/
+    }
+
+    @Override
+    public void onDatabaseOpen(SQLiteDatabase database) {
+    }
+
+    @Override
+    public void onSelectReady(Cursor data) {
+        if (data != null) {
+            while (data.moveToNext()) {
+                Site site = new Site();
+                site.setId(data.getInt(data.getColumnIndex(SiteEntry._ID)));
+                site.setTitle(data.getString(data.getColumnIndex(SiteEntry.COLUMN_NAME)));
+                mItems.add(site);
+            }
+            if (mItems.size() > 0) {
+                mNoSites.setVisibility(View.GONE);
+                mSitesListView.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    @Override
+    public void onInsertReady(long id) {
+    }
+
+    @Override
+    public void onUpdateReady(int rows) {
     }
 }

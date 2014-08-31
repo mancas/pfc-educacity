@@ -12,6 +12,7 @@ public class SettingsActivity extends Activity {
     public static final String NOTIFICATIONS_VIBRATE_KEY = "pref_key_notifications_vibrate";
     public static final int BOOL_TYPE = 1;
     public static final int STRING_TYPE = 2;
+    public static final long[] VIBRATE_PATTERN = new long[]{1000}; 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

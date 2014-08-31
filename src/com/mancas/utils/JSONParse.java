@@ -61,6 +61,21 @@ public class JSONParse {
         }
         return model;
     }
+    
+    public static boolean checkEditProfileStatus(String response)
+    {
+        JSONObject json;
+        try {
+            json = new JSONObject(response);
+            int code = json.getInt(REGISTER_CODE_TAG);
+            if (code == 200) {
+                return true;
+            }
+        } catch (JSONException e) {
+            return false;
+        }
+        return false;
+    }
 
     /**
      * Check if a string is a JSONArray or not

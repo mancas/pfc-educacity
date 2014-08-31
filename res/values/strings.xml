@@ -15,6 +15,7 @@
     <string name="create_account_success">¡Cuenta creada con éxito!</string>
     <string name="no_network_available_retry">No hay conexión a Internet</string>
     <string name="getting_site">Descargando datos</string>
+    <string name="no_sites_have_fun">No has realizado fotos en ningun punto de interés. ¡Vuelve ha pasarlo bien y guarda tus recuerdos!</string>
 
     <!-- Dialogs -->
     <string name="enable_gps">Para sacar el máximo partido a Educacity, es recomendable activar el GPS, ¿quieres hacerlo ahora?</string>
@@ -27,6 +28,7 @@
     <string name="add_photo">Añadir foto</string>
     <string name="no_network_available">No tienes conexión a internet. Conectaté y vuelve a intentarlo</string>
     <string name="no_network_title">Fallo de red</string>
+    <string name="synchronize">Sincronizando</string>
 
     <!-- Drawer -->
     <string name="drawer_map">Sevilla</string>
@@ -47,17 +49,13 @@
     <string name="info_tab_information">Información</string>
     <string name="info_tab_photos">Fotos</string>
     <string name="info_tab_timeline">Timeline</string>
-    <string name="title_activity_test">TestActivity</string>
-    <string name="title_section1">Section 1</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
-    <string name="hello_world">Hello world!</string>
 
     <!-- Errors -->
     <string name="db_insert_error">Ocurrió un error inesperado</string>
     <string name="error_file_create">No se puede crear los archivos</string>
     <string name="title_activity_full_screen_view">FullScreenViewActivity</string>
     <string name="error_network_response">Ocurrió un fallo durante la conexión con el servidor</string>
+    <string name="error_synchronize">Algunos datos no se sincronizaron correctamente</string>
     
     <!-- Multichoice -->
     <string name="multichoice_images_title">Seleccionar imagenes</string>

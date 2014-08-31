@@ -491,5 +491,41 @@ public class DBHelper
             callbacks.onUpdateReady(rowsAffected);
         }
     }
+
+    /**
+     * Private class that provide an asynchronous task to insert a site entry if needed
+     * @author Manuel Casas Barrado
+     * @version 1.0
+     */
+    public class AsyncInsertSiteIfNeeded extends AsyncTask<com.mancas.models.Site, Void, Long>
+    {
+        @Override
+        protected Long doInBackground(com.mancas.models.Site... params)
+        {
+            com.mancas.models.Site site = params[0];
+            if (db == null) {
+                db = getDBOpenHelper().getWritableDatabase();
+            }
+            long id = -1;
+            String[] args = {String.valueOf(site.getId())};
+
+            Cursor data = db.query(SiteEntry.TABLE_NAME_WITH_PREFIX, SiteEntry.TABLE_PROJECTION,
+                    SiteEntry.DEFAULT_TABLE_SELECTION, args, null, null, null);
+
+            if (data.getCount() == 0) {
+                ContentValues values = new ContentValues();
+                values.put(SiteEntry._ID, site.getId());
+                values.put(SiteEntry.COLUMN_NAME, site.getTitle());
+                id = db.insert(SiteEntry.TABLE_NAME_WITH_PREFIX, null, values);
+            }
+
+            return id;
+        }
+
+        @Override
+        protected void onPostExecute(Long id) {
+            callbacks.onInsertReady(id);
+        }
+    }
 }
 
