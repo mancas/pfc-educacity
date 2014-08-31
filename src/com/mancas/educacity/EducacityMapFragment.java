@@ -31,13 +31,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Marker;
 import com.mancas.dialogs.EnableGPSDialog;
 
-public class EducacityMapFragment extends Fragment
-        implements
-        ConnectionCallbacks,
-        OnConnectionFailedListener,
-        LocationListener,
-        OnMyLocationButtonClickListener,
-        OnMarkerClickListener{
+public class EducacityMapFragment extends Fragment {
 
     /**
      * A pointer to the current callbacks instance (the Activity).
@@ -48,13 +42,6 @@ public class EducacityMapFragment extends Fragment
      */
     private FragmentActivity mContext;
 
-    private GoogleMap mMap;
-    private LocationClient mLocationClient;
-    private LocationManager mLocationManager;
-    private LocationRequest REQUEST = LocationRequest.create()
-            .setInterval(10000)
-            .setFastestInterval(32)
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     private RelativeLayout infoLayout;
     private SaveStateMapFragment mMapFragment;
     
@@ -65,9 +52,6 @@ public class EducacityMapFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //setUpLocationClientIfNeeded();
-        //setUpLocationManagerIfNeeded();
     }
     
     @Override
@@ -80,13 +64,12 @@ public class EducacityMapFragment extends Fragment
     {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         infoLayout = (RelativeLayout) view.findViewById(R.id.sites_info);
-        //setUpMap(R.id.map);
         mMapFragment = new SaveStateMapFragment();
-        
+
         FragmentTransaction ft = mContext.getSupportFragmentManager().beginTransaction();
         ft.add(R.id.map, mMapFragment);
         ft.commit();
-        
+
         if (savedInstanceState == null) {
             mMapFragment.setRetainInstance(true);
         }
@@ -133,10 +116,6 @@ public class EducacityMapFragment extends Fragment
     public void onResume()
     {
         super.onResume();
-        //setUpMap(R.id.map);
-        //setUpLocationClientIfNeeded();
-        //setUpLocationManagerIfNeeded();
-        //mLocationClient.connect();
     }
 
     @Override
@@ -149,8 +128,6 @@ public class EducacityMapFragment extends Fragment
     public void onPause()
     {
         super.onPause();
-        if (mLocationClient != null)
-            mLocationClient.disconnect();
     }
     
     public void onStop()
@@ -158,25 +135,7 @@ public class EducacityMapFragment extends Fragment
         super.onStop();
     }
     
-    /**
-     * Users of this fragment must call this method to set up the navigation drawer interactions.
-     *
-     * @param fragmentId   The android:id of this fragment in its activity's layout.
-     */
-    public void setUpMap(int fragmentId) {
-        if (mMap == null) {
-            //mMap = ((SupportMapFragment) getFragmentManager().findFragmentById(fragmentId)).getMap();
-            mMap = ((SupportMapFragment) mContext.getSupportFragmentManager().findFragmentById(fragmentId)).getMap();
-            //Check if we were successful in obtaining the map
-            if (mMap != null) {
-                mMap.setMyLocationEnabled(true);
-                mMap.setOnMyLocationButtonClickListener(this);   
-                mMap.setOnMarkerClickListener(this);
-            }
-        }
-    }
 
-    
     /**
      * Callbacks interface that all activities using this fragment must implement.
      */
@@ -185,120 +144,5 @@ public class EducacityMapFragment extends Fragment
          * Called when an item in the navigation drawer is selected.
          */
         void onMarkerSelected();
-    }
-    
-    /**
-     * Connection Callbacks
-     */
-    @Override
-    public void onConnectionFailed(ConnectionResult result)
-    {
-        //Do nothing        
-    }
-
-    @Override
-    public void onConnected(Bundle connectionHint)
-    {
-        mLocationClient.requestLocationUpdates(REQUEST, this); 
-    }
-
-    @Override
-    public void onDisconnected()
-    {
-        //Do nothing
-    }
-    
-    /**
-     * Set up functions
-     */
-    private void setUpLocationClientIfNeeded() {
-        if (mLocationClient == null) {
-            mLocationClient = new LocationClient(
-                    mContext,
-                    this,  // ConnectionCallbacks
-                    this); // OnConnectionFailedListener
-        }
-    }
-    
-    private void setUpLocationManagerIfNeeded()
-    {
-        if (mLocationManager == null) {
-            mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
-            checkIfGPSIsEnabled();
-        }
-    }
-    
-    /**
-     * Show gps not enabled dialog
-     */
-    private void notGPSEnabled()
-    {
-        EnableGPSDialog enableGPSDialog = new EnableGPSDialog();
-        enableGPSDialog.setTargetFragment(this, EnableGPSDialog.GPS_ENABLED);
-        enableGPSDialog.show(getFragmentManager(), "enabledGPS");
-    }
-    
-    private void checkIfGPSIsEnabled()
-    {
-        boolean isGPSEnabled = false;
-
-        if (mLocationManager != null) {
-            isGPSEnabled = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            
-            if (!isGPSEnabled) {
-                notGPSEnabled();
-            } else {
-               // if (this.sites.size() == 0)
-                 //   new RetrieveSitesTask(sitesHandler, this).execute(RetrieveSitesTask.URL_GET_SITES);
-            }
-        }
-    }
-    
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        super.onActivityResult(requestCode, resultCode, data);
-        // Check which request we're responding to
-        if (requestCode == EnableGPSDialog.GPS_ENABLED) {
-            checkIfGPSIsEnabled();
-        }
-    }
-    
-    /**
-     * Marker click
-     */
-    @Override
-    public boolean onMarkerClick(Marker marker)
-    {
-        //Intent intent = new Intent(MapActivity.this, InfoActivity.class);
-        //intent.putExtra("SITE_CLICKED", this.markersMap.get(marker.getId()));
-        //startActivityForResult(intent, 2);
-        //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
-        //overridePendingTransition(android.R.anim.slide_out_right, android.R.anim.slide_in_left);
-        mCallbacks.onMarkerSelected();
-        return true;
-    }
-    
-    /**
-     * Location Button click
-     */
-    @Override
-    public boolean onMyLocationButtonClick()
-    {
-        Toast.makeText(mContext, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
-        if (infoLayout.getVisibility() == View.VISIBLE) {
-            infoLayout.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim.educacity_slide_down));
-            infoLayout.setVisibility(View.GONE);
-        } else {
-            infoLayout.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim.educacity_slide_up));
-            infoLayout.setVisibility(View.VISIBLE);
-        }
-        return false;
-    }
-
-    @Override
-    public void onLocationChanged(Location location)
-    {
-                
     }
 }

@@ -1,43 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/scroll"
+    tools:context="com.mancas.educacity.SiteInfoFragment"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/solid_white"
-    tools:context="com.mancas.educacity.SiteInfoFragment" >
+    android:gravity="center_vertical" >
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+    <LinearLayout
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="visible"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin" >
     
-        <ImageView
-            android:id="@+id/image_site"
-            android:layout_width="match_parent"
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/common_signin_btn_icon_dark" />
+            android:layout_marginBottom="8dp" />
     
-        <LinearLayout 
+        <TextView
+            android:id="@+id/progress_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="sans-serif-light"
+            android:text="@string/getting_site"
+            android:gravity="center_horizontal"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Button
+            android:id="@+id/retry_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/retry"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/solid_white"
+        tools:context="com.mancas.educacity.SiteInfoFragment"
+        android:visibility="gone" >
+    
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/image_site"
-            android:orientation="vertical"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin"
-            android:background="@color/solid_white" >
-    
-            <TextView
+            android:layout_height="wrap_content" >
+        
+            <ImageView
+                android:id="@+id/site_image"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/educacity_border_bottom"
-                android:text="@string/profile_header_name"
-                android:textColor="@android:color/holo_blue_light"
-                android:textStyle="bold"
-                android:paddingBottom="4dp"
+                android:src="@drawable/empty_photo" />
+        
+            <LinearLayout 
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/image_site"
+                android:orientation="vertical"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:paddingTop="@dimen/activity_vertical_margin"
-                android:layout_marginBottom="4dp" />
-        </LinearLayout>
-    </RelativeLayout>
-</ScrollView>
+                android:background="@color/solid_white" >
+        
+                <TextView
+                    android:id="@+id/site_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/educacity_border_bottom"
+                    android:text="@string/profile_header_name"
+                    android:textColor="@android:color/holo_blue_light"
+                    android:textStyle="bold"
+                    android:paddingBottom="4dp"
+                    android:paddingTop="@dimen/activity_vertical_margin"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/site_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="4dp"
+                    android:paddingTop="@dimen/activity_vertical_margin"
+                    android:layout_marginBottom="4dp" />
+            </LinearLayout>
+        </RelativeLayout>
+    </ScrollView>
+</LinearLayout>

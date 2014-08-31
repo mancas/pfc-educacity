@@ -11,5 +11,7 @@
     <color name="solid_white">#ffffffff</color>
     <color name="nav_drawer_item_dark_default">#f7f7f7</color>
     <color name="black_overlay">#66000000</color>
+    <color name="translucent_holo_bright">#1a33b5e5</color>
+    <color name="translucent_tab_focused">#1a333333</color>
 
 </resources>

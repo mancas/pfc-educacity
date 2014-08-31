@@ -4,8 +4,10 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -48,6 +50,7 @@ public class MainActivity extends FragmentActivity implements
      * An instance of {@link DBHelper} used to manage changes in user data
      */
     private DBHelper mDatabaseManager;
+    private BroadcastReceiver mBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +68,16 @@ public class MainActivity extends FragmentActivity implements
           (DrawerLayout) findViewById(R.id.drawer_layout));
 
         PreferenceManager.setDefaultValues(this, R.xml.educacity_preferences, false);
-
+        setUpProximityAlertReceiver();
         loadFragment(mMapFragment);
+    }
+
+    private void setUpProximityAlertReceiver() {
+        if (mBroadcastReceiver == null) {
+            IntentFilter filter = new IntentFilter(SaveStateMapFragment.PROXIMITY_ALERT_INTENT);
+            mBroadcastReceiver = new ProximityIntentReceiver();
+            registerReceiver(mBroadcastReceiver, filter);
+        }
     }
 
     @Override
@@ -85,6 +96,13 @@ public class MainActivity extends FragmentActivity implements
     protected void onSaveInstanceState(Bundle outState)
     {
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override

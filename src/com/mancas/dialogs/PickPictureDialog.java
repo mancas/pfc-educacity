@@ -42,6 +42,10 @@ public class PickPictureDialog extends DialogFragment
      * A reference to this object
      */
     private final PickPictureDialog mDialog = this;
+    /**
+     * Title of the dialog
+     */
+    private static String mTitle;
 
     /**
      * Method that returns a new instance of PickPictureDialog
@@ -55,6 +59,19 @@ public class PickPictureDialog extends DialogFragment
         return dialog;
     }
 
+    /**
+     * Method that returns a new instance of PickPictureDialog and set
+     * the title of the dialog
+     * @param callbacks an instance of the class which is going to handle events
+     * @param title the title of the dialog
+     * @return an instance of {@link PickPictureDialog}
+     */
+    public static PickPictureDialog newInstance(PickPictureCallbacks callbacks,
+            String title) {
+        mTitle = title;
+        return newInstance(callbacks);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,7 +82,11 @@ public class PickPictureDialog extends DialogFragment
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.educacity_pick_picture, container, false);
         //Set dialog title
-        getDialog().setTitle(R.string.profile_image);
+        if (mTitle != null) {
+            getDialog().setTitle(mTitle);
+        } else {
+            getDialog().setTitle(R.string.profile_image);
+        }
 
        //Set listener to layouts
         mCameraLayout = (RelativeLayout) rootView.findViewById(R.id.take_picture);

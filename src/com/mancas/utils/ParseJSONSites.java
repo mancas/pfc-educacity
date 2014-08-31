@@ -35,6 +35,7 @@ public class ParseJSONSites {
             site.setInformation(json.getString(SITE_INFORMATION_TAG));
         } catch (JSONException e) {
             Log.d("JSON", e.getMessage());
+            site.setError(true);
             return site;
         }
         return site;

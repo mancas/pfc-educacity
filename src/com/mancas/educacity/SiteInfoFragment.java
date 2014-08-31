@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 
 public class SiteInfoFragment extends Fragment
 {
@@ -44,6 +45,7 @@ public class SiteInfoFragment extends Fragment
         case 0:
             rootView =
               inflater.inflate(R.layout.educacity_tab_information, container, false);
+            mCallbacks.onInformationLayoutReady((LinearLayout) rootView);
             break;
         case 1:
             rootView =
@@ -60,5 +62,6 @@ public class SiteInfoFragment extends Fragment
     public interface SiteInfoCallback
     {
         public void onGridReady(GridView grid);
+        public void onInformationLayoutReady(LinearLayout root);
     }
 }

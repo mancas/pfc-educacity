@@ -28,7 +28,15 @@ import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mancas.adapters.GridViewImageAdapter;
@@ -42,14 +50,20 @@ import com.mancas.database.DBHelper.DBHelperCallback;
 import com.mancas.database.DBTaskInsert;
 import com.mancas.database.DBTaskQuery;
 import com.mancas.database.Image.ImageEntry;
+import com.mancas.dialogs.NoNetworkDialog;
 import com.mancas.dialogs.PickPictureDialog;
 import com.mancas.dialogs.PickPictureDialog.PickPictureCallbacks;
 import com.mancas.educacity.SiteInfoFragment.SiteInfoCallback;
+import com.mancas.models.RegisterModel;
+import com.mancas.models.Site;
 import com.mancas.utils.AppUtils;
+import com.mancas.utils.HTTPRequestHelper;
+import com.mancas.utils.ParseJSONSites;
+import com.mancas.utils.HTTPRequestHelper.HTTPResponseCallback;
 import com.mancas.utils.Utils;
 
 public class InfoActivity extends FragmentActivity implements ActionBar.TabListener,
-    PickPictureCallbacks, DBHelperCallback, SiteInfoCallback {
+    PickPictureCallbacks, DBHelperCallback, SiteInfoCallback, OnClickListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -73,10 +87,6 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
      * Tag for identify photos tab
      */
     private static final int PHOTOS_TAB = 1;
-    /**
-     * Tag for identify timeline tab
-     */
-    private static final int TIMELINE_TAB = 2;
     /**
      * Debug Tag for use logging debug output to LogCat
      */
@@ -106,12 +116,44 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
      * The column width of each item displayed in the grid view
      */
     private int mColumnWidth;
+    /**
+     * View where the information about the place will be displayed
+     */
+    private ScrollView mInformationView;
+    /**
+     * Current site information
+     */
+    private Site mSite;
+    /**
+     * LinewarLayoyt where the progress will be displayed
+     */
+    private LinearLayout mProgress;
+    /**
+     * Progress bar
+     */
+    private ProgressBar mProgressBar;
+    /**
+     * Button to retry if something went wrong
+     */
+    private Button mRetry;
+    /**
+     * TextView where to display the current status
+     */
+    private TextView mStatus;
+    /**
+     * ID of the current site
+     */
+    private Integer mSiteId;
+    
+    public static String GET_SITE_URL = "http://rest.educacity-sevilla.com/site/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
         getActionBar().setDisplayHomeAsUpEnabled(true);
+        mSiteId = getIntent().getIntExtra(SaveStateMapFragment.SITE_CLICKED, 1);
+        GET_SITE_URL += mSite;
 
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
@@ -240,7 +282,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
      */
     private void takePhoto()
     {
-        PickPictureDialog dialog = PickPictureDialog.newInstance(this);
+        PickPictureDialog dialog = PickPictureDialog.newInstance(this, getResources().getString(R.string.add_photo));
         dialog.show(getFragmentManager(), TAG);
     }
 
@@ -428,58 +470,126 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         getUserImages();
     }
 
-    /* MULTICHOICE MODE LISTENER */
+    @Override
+    public void onInformationLayoutReady(LinearLayout root) {
+        mInformationView = (ScrollView) root.findViewById(R.id.scroll);
+        mProgress = (LinearLayout) root.findViewById(R.id.progress);
+        mRetry = (Button) mProgress.findViewById(R.id.retry_button);
+        mRetry.setOnClickListener(this);
+        mProgressBar = (ProgressBar) mProgress.findViewById(R.id.progress_bar);
+        mStatus = (TextView) mProgress.findViewById(R.id.progress_message);
+        getSite();
+    }
 
-    /*@Override
-    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        // TODO Delete images from DB and from adapter
-        switch (item.getItemId()) {
-        case R.id.action_delete:
-            SparseBooleanArray selectedItems = mAdpater.getSelectedIds();
-            for(int i = 0; i < selectedItems.size(); i++) {
-                if (selectedItems.valueAt(i)) {
-                    mImagesPath.remove(selectedItems.keyAt(i));
+    /**
+     * Asynchronous task to retrieve the information about the current site
+     * @author Manuel Casas Barrado
+     * @version 1.0
+     */
+    public class GetSiteTask extends AsyncTask<Void, Void, Site>
+        implements HTTPResponseCallback{
+        private Site mSite;
+
+        @Override
+        protected Site doInBackground(Void... params) {
+            HTTPRequestHelper helper = new HTTPRequestHelper(null, this);
+            helper.performGet(GET_SITE_URL);
+
+            return mSite;
+        }
+
+        @Override
+        protected void onPostExecute(final Site model) {
+            if (model != null) {
+                if (!model.hasErrors()) {
+                    AppUtils.showProgress(getApplicationContext(), mProgress, mInformationView, false);
+                    displayModelInView(model);
+                    return;
                 }
+                displayServerError();
             }
-            mAdpater.notifyDataSetChanged();
-            mode.finish();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        mode.getMenuInflater().inflate(R.menu.multichoice_delete, menu);
-        mode.setTitle(R.string.multichoice_images_title);
-        mode.setSubtitle("1 " + getResources().getString(R.string.one_item));
-        return true;
-    }
-
-    @Override
-    public void onDestroyActionMode(ActionMode mode) {
-        mAdpater.removeSelection();
-    }
-
-    @Override
-    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false;
-    }
-
-    @Override
-    public void onItemCheckedStateChanged(ActionMode mode, int position,
-            long id, boolean checked) {
-        int checkedSum = mGrid.getCheckedItemCount();
-        Log.d(TAG, "" + checkedSum);
-        switch (checkedSum) {
-        case 1:
-            mode.setSubtitle(checkedSum + " " + getResources().getString(R.string.one_item));
-            break;
-        default:
-            mode.setSubtitle(checkedSum + " " + getResources().getString(R.string.more_items));
-            break;
         }
 
-        mAdpater.toggleSelection(position);
-    }*/
+        @Override
+        protected void onCancelled() {
+            displayServerError();
+        }
+
+        @Override
+        public void onResponseReady(String response) {
+            Log.d(TAG, response);
+            if (!response.isEmpty()) {
+                mSite = ParseJSONSites.parseSingleSiteResponse(response);
+            } else {
+                displayServerError();
+                this.cancel(true);
+            }
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        retryGetSite();
+    }
+
+    /**
+     * Method that retry to get the information from server
+     */
+    public void retryGetSite()
+    {
+        mProgressBar.setVisibility(View.VISIBLE);
+        mStatus.setText(R.string.getting_site);
+        mRetry.setVisibility(View.GONE);
+        getSite();
+    }
+
+    /**
+     * Method that get a site information form the server
+     */
+    public void getSite()
+    {
+        boolean connection = AppUtils.checkNetworkConnection(getApplicationContext());
+        if (!connection) {
+            displayConnectionError();
+            return;
+        }
+        GetSiteTask task = new GetSiteTask();
+        task.execute((Void) null);
+    }
+
+    /**
+     * Method that display a network connection error
+     */
+    public void displayConnectionError() {
+        mProgressBar.setVisibility(View.GONE);
+        mStatus.setText(R.string.no_network_available_retry);
+        mRetry.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Method that display a server connection error
+     */
+    public void displayServerError() {
+        mProgressBar.setVisibility(View.GONE);
+        mStatus.setText(R.string.error_network_response);
+        mRetry.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Method that display the site information in the screen
+     * @param model the site information retrieved from the server
+     */
+    public void displayModelInView(Site model)
+    {
+        mSite = model;
+        TextView name = (TextView) mInformationView.findViewById(R.id.site_name);
+        TextView info = (TextView) mInformationView.findViewById(R.id.sites_info);
+        ImageView image = (ImageView) mInformationView.findViewById(R.id.site_image);
+
+        mProgress.setVisibility(View.GONE);
+        mInformationView.setVisibility(View.VISIBLE);
+        name.setText(mSite.getTitle());
+        info.setText(mSite.getInformation());
+        // TODO load image
+    }
 }

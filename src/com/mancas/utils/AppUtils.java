@@ -122,11 +122,11 @@ public class AppUtils
      * Shows the progress UI and hides the form.
      * @param context the context of the application
      * @param status view to show the user the status progress
-     * @param form view of the form which is going to be processed
+     * @param view view which is going to be processed
      * @param show if true, status progress will be shown
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    public static void showProgress(Context context, final View status, final View form, final boolean show) {
+    public static void showProgress(Context context, final View status, final View view, final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
@@ -144,13 +144,13 @@ public class AppUtils
                         }
                     });
 
-            form.setVisibility(View.VISIBLE);
-            form.animate().setDuration(shortAnimTime)
+            view.setVisibility(View.VISIBLE);
+            view.animate().setDuration(shortAnimTime)
                     .alpha(show ? 0 : 1)
                     .setListener(new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            form.setVisibility(show ? View.GONE
+                            view.setVisibility(show ? View.GONE
                                     : View.VISIBLE);
                         }
                     });
@@ -158,7 +158,7 @@ public class AppUtils
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
             status.setVisibility(show ? View.VISIBLE : View.GONE);
-            form.setVisibility(show ? View.GONE : View.VISIBLE);
+            view.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 

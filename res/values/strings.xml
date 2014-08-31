@@ -13,15 +13,18 @@
     <string name="retry">Reintentar</string>
     <string name="title_activity_register">Regístrate!</string>
     <string name="create_account_success">¡Cuenta creada con éxito!</string>
+    <string name="no_network_available_retry">No hay conexión a Internet</string>
+    <string name="getting_site">Descargando datos</string>
 
     <!-- Dialogs -->
-    <string name="enable_gps">Necesitas activar el GPS, ¿quieres hacerlo ahora?</string>
+    <string name="enable_gps">Para sacar el máximo partido a Educacity, es recomendable activar el GPS, ¿quieres hacerlo ahora?</string>
     <string name="settings">Ajustes</string>
     <string name="markers">Añadiendo marcadores</string>
     <string name="loading">Cargando...</string>
     <string name="profile_image">Foto de perfil</string>
     <string name="profile_name">Nombre de perfil</string>
     <string name="ok">Ok</string>
+    <string name="add_photo">Añadir foto</string>
     <string name="no_network_available">No tienes conexión a internet. Conectaté y vuelve a intentarlo</string>
     <string name="no_network_title">Fallo de red</string>
 

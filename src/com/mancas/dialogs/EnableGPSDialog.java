@@ -32,7 +32,7 @@ public class EnableGPSDialog extends DialogFragment
                    public void onClick(DialogInterface dialog, int id) {
                        //Start settings activity
                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                       getTargetFragment().startActivityForResult(intent, GPS_ENABLED);
+                       startActivity(intent);
                    }
                })
                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
