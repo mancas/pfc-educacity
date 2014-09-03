@@ -4,57 +4,17 @@ package com.mancas.models;
  * @author Manuel Casas Barrado
  * @version 1.0
  */
-public class RegisterModel {
-    private boolean mEmail;
-    private boolean mPassword;
-    private boolean mOther;
-    private int mId;
+public class LoginModel {
+    private boolean mError;
     private String mAccessToken;
     private String mRefreshToken;
     private String mClientId;
     private String mClientSecret;
+    private int mId;
 
-    public RegisterModel() {
-        mEmail = false;
-        mPassword = false;
-        mOther = false;
+    public LoginModel() {
+        mError = false;
         mId = 1;
-    }
-
-    /**
-     * Gets error for email field
-     * @return true if the email field has error, or false if not
-     */
-    public boolean getEmail()
-    {
-        return mEmail;
-    }
-
-    /**
-     * Gets error for password field
-     * @return true if the password field has error, or false if not
-     */
-    public boolean getPassword()
-    {
-        return mPassword;
-    }
-
-    /**
-     * Sets error for email field
-     * @param email email field has error
-     */
-    public void setEmail(boolean email)
-    {
-        mEmail = email;
-    }
-
-    /**
-     * Sets error for password field
-     * @param password password field has error
-     */
-    public void setPassword(boolean password)
-    {
-        mPassword = password;
     }
     
     /**
@@ -76,21 +36,21 @@ public class RegisterModel {
     }
 
     /**
-     * Gets other type error
-     * @return true if there is an other type error, false if not
+     * Gets error
+     * @return true if there is an error, false if not
      */
-    public boolean getOther()
+    public boolean getError()
     {
-        return mOther;
+        return mError;
     }
 
     /**
-     * Sets other type error
-     * @param other true if there is an other type error
+     * Sets error
+     * @param other true if there is an error
      */
-    public void setOther(boolean other)
+    public void setError(boolean error)
     {
-        mOther = other;
+        mError = error;
     }
 
     /**
@@ -171,6 +131,6 @@ public class RegisterModel {
      */
     public boolean hasErrors()
     {
-        return (mEmail || mPassword || mOther);
+        return mError;
     }
 }

@@ -1,14 +1,12 @@
 package com.mancas.utils;
 
-import java.util.Iterator;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.mancas.models.RegisterModel;
-
 import android.util.Log;
+
+import com.mancas.models.LoginModel;
+import com.mancas.models.RegisterModel;
 
 public class JSONParse {
     public static final String REGISTER_CODE_TAG = "code";
@@ -19,6 +17,8 @@ public class JSONParse {
     public static final String REGISTER_ID_TAG = "id";
     public static final String ACCESS_TOKEN_TAG = "access_token";
     public static final String REFRESH_TOKEN_TAG = "refresh_token";
+    public static final String CLIENT_ID_TAG = "client_id";
+    public static final String CLIENT_SECRET_TAG = "client_secret";
     public static final int SUCCESS_CODE = 200;
     public static final int ERROR_CODE = 400;
 
@@ -35,9 +35,8 @@ public class JSONParse {
             int code = json.getInt(REGISTER_CODE_TAG);
             switch (code) {
             case SUCCESS_CODE:
-                model.setId(json.getInt(REGISTER_ID_TAG));
-                model.setAccessToken(json.getString(ACCESS_TOKEN_TAG));
-                model.setRefreshToken(json.getString(REFRESH_TOKEN_TAG));
+                model.setClientId(json.getString(CLIENT_ID_TAG));
+                model.setClientSecret(json.getString(CLIENT_SECRET_TAG));
                 break;
             case ERROR_CODE:
                 JSONObject node = json.getJSONObject(REGISTER_ERRORS_TAG);
@@ -61,7 +60,12 @@ public class JSONParse {
         }
         return model;
     }
-    
+
+    /**
+     * Checks if the edition of the profile has gone alright
+     * @param response the server response
+     * @return true if everything went ok, or false if not
+     */
     public static boolean checkEditProfileStatus(String response)
     {
         JSONObject json;
@@ -111,5 +115,69 @@ public class JSONParse {
         }
 
         return false;
+    }
+
+    /**
+     * Retrieves from server the access token and the refresh token for this user
+     * @param response the response from the server
+     * @param model the current register model
+     * @return the current register model updated
+     */
+    public static RegisterModel checkLoginFromRegister(String response,
+            RegisterModel model) {
+        try {
+            JSONObject json = new JSONObject(response);
+            String accessToken = json.getString(ACCESS_TOKEN_TAG);
+            String refreshToken = json.getString(REFRESH_TOKEN_TAG);
+            model.setAccessToken(accessToken);
+            model.setRefreshToken(refreshToken);
+        } catch (JSONException e) {
+            model.setOther(true);
+        }
+
+        return model;
+    }
+
+    /**
+     * Checks if the current login attempt has errors or not
+     * @param response the response from the server
+     * @param model the Login model associated to this attempt of login
+     * @return the current model updated
+     */
+    public static LoginModel checkLoginErrors(String response, LoginModel model) {
+        try {
+            JSONObject json = new JSONObject(response);
+            String clientID = json.getString(CLIENT_ID_TAG);
+            String clientSecret = json.getString(CLIENT_SECRET_TAG);
+            model.setClientId(clientID);
+            model.setClientSecret(clientSecret);
+        } catch (JSONException e) {
+            //We can assume here the response has errors
+            model.setError(true);
+        }
+
+        return model;
+    }
+
+    /**
+     * Parse the response from the server that contains the access and the refresh tokens
+     * @param response the response from the server
+     * @param model the Login model associated to this attempt of login
+     * @return the current model updated
+     */
+    public static LoginModel parseLogin(String response, LoginModel model) {
+        try {
+            JSONObject json = new JSONObject(response);
+            String accessToken = json.getString(ACCESS_TOKEN_TAG);
+            String refreshToken = json.getString(REFRESH_TOKEN_TAG);
+            model.setAccessToken(accessToken);
+            model.setRefreshToken(refreshToken);
+        } catch (JSONException e) {
+            //We can assume here the response has errors
+            Log.d("JSON", e.getMessage());
+            model.setError(true);
+        }
+
+        return model;
     }
 }

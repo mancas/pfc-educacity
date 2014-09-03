@@ -41,7 +41,8 @@
 
         <activity
             android:name="com.mancas.educacity.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -51,20 +52,23 @@
         <activity
             android:name="com.mancas.educacity.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName="com.mancas.educacity.MainActivity" >
+            android:parentActivityName="com.mancas.educacity.MainActivity"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.mancas.educacity.MainActivity" />
         </activity>
         <activity
             android:name="com.mancas.educacity.InfoActivity"
-            android:label="@string/title_activity_info" >
+            android:label="@string/title_activity_info"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.mancas.educacity.LoginActivity"
             android:label="@string/title_activity_login"
             android:parentActivityName="com.mancas.educacity.MainActivity"
-            android:windowSoftInputMode="adjustResize|stateVisible" >
+            android:windowSoftInputMode="adjustResize|stateVisible"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.mancas.educacity.MainActivity" />
@@ -72,7 +76,8 @@
         <activity
             android:name="com.mancas.educacity.RegisterActivity"
             android:label="@string/title_activity_register"
-            android:parentActivityName="com.mancas.educacity.LoginActivity" >
+            android:parentActivityName="com.mancas.educacity.LoginActivity"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.mancas.educacity.LoginActivity" />

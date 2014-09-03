@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +25,8 @@ import com.mancas.database.DBHelper;
 import com.mancas.database.DBHelper.AsyncUpdate;
 import com.mancas.database.DBTaskUpdate;
 import com.mancas.database.Image.ImageEntry;
+import com.mancas.dialogs.NoNetworkDialog;
+import com.mancas.synchronize.Synchronize;
 import com.mancas.utils.AppUtils;
 
 
@@ -118,6 +121,7 @@ public class MainActivity extends FragmentActivity implements
             break;
         case 3:
             //Sincronizar
+            synchronize();
             break;
         case 4:
             //Ajustes
@@ -125,6 +129,20 @@ public class MainActivity extends FragmentActivity implements
             startActivity(mIntent);
             break;
         }
+    }
+
+    /**
+     * Method that starts the synchronize
+     */
+    private void synchronize() {
+        boolean connection = AppUtils.checkNetworkConnection(getApplicationContext());
+        if (!connection) {
+            NoNetworkDialog dialog = new NoNetworkDialog();
+            dialog.show(getFragmentManager(), "Main activity");
+            return;
+        }
+        Synchronize sync = Synchronize.getInstance(this);
+        sync.synchronizeData();
     }
 
     /**
@@ -142,7 +160,6 @@ public class MainActivity extends FragmentActivity implements
      * he must be enter login data or register in order to access to his account
      */
     private void checkLogin() {
-        //TODO MAKE LOGIN WITH REST
         long accountId = AppUtils.getAccountID(getApplicationContext());
         if (accountId == -1) {
             //No accounts registered
@@ -199,12 +216,10 @@ public class MainActivity extends FragmentActivity implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
        super.onActivityResult(requestCode, resultCode, data);
-       if (resultCode == Activity.RESULT_OK) {
-           switch (requestCode) {
-           case LoginActivity.LOGIN_REQUEST:
-               loadFragment(new MyAccountFragment());
-               break;
-           }
+       switch (requestCode) {
+       case LoginActivity.LOGIN_REQUEST:
+           loadFragment(new MyAccountFragment());
+           break;
        }
     }
 
@@ -214,11 +229,13 @@ public class MainActivity extends FragmentActivity implements
      */
     @Override
     public void updateAccountName(final String name) {
+        Log.d("MAIN", " " + (mDatabaseManager != null));
         if (mDatabaseManager != null) {
             ContentValues values = new ContentValues();
             values.put(AccountEntry.COLUMN_NAME, name);
             values.put(AccountEntry.COLUMN_SYNC, false);
             long id = AppUtils.getAccountID(getApplicationContext());
+            Log.d("MAIN", String.valueOf(id));
             String[] whereArgs = {String.valueOf(id)};
             DBTaskUpdate task = new DBTaskUpdate(AccountEntry.TABLE_NAME_WITH_PREFIX, values,
                     AccountEntry.DEFAULT_TABLE_SELECTION, whereArgs);
@@ -240,7 +257,6 @@ public class MainActivity extends FragmentActivity implements
     @Override
     public void updateProfileImage(final String path) {
         if (mDatabaseManager != null) {
-            mDatabaseManager.establishDB();
             long image_id = AppUtils.getAccountImageID(getApplicationContext());
             String where = ImageEntry.DEFAULT_TABLE_SELECTION;
             String[] whereArgs = {String.valueOf(image_id)};

@@ -110,8 +110,7 @@
                 android:minHeight="?android:attr/listPreferredItemHeightSmall"
                 android:gravity="center_vertical"
                 android:singleLine="true"
-                android:textColor="@android:color/secondary_text_light"
-                android:text="24 fotografías" />
+                android:textColor="@android:color/secondary_text_light" />
 
             <!-- Visited sites -->
             <TextView
@@ -132,8 +131,7 @@
                 android:minHeight="?android:attr/listPreferredItemHeightSmall"
                 android:gravity="center_vertical"
                 android:singleLine="true"
-                android:textColor="@android:color/secondary_text_light"
-                android:text="13 sitios" />
+                android:textColor="@android:color/secondary_text_light" />
          </LinearLayout>
     </RelativeLayout>
 </ScrollView>

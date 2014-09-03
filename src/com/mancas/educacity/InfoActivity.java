@@ -30,6 +30,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -57,6 +59,7 @@ import com.mancas.dialogs.PickPictureDialog.PickPictureCallbacks;
 import com.mancas.educacity.SiteInfoFragment.SiteInfoCallback;
 import com.mancas.models.RegisterModel;
 import com.mancas.models.Site;
+import com.mancas.synchronize.Synchronize;
 import com.mancas.utils.AppUtils;
 import com.mancas.utils.HTTPRequestHelper;
 import com.mancas.utils.ParseJSONSites;
@@ -149,7 +152,8 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
      * Title of the current site
      */
     private String mSiteTitle;
-    
+    private WebView mWikipedia;
+    public static String WIKIPEDIA_PREFIX = "http://es.wikipedia.org/wiki/";
     public static String GET_SITE_URL = "http://rest.educacity-sevilla.com/site/";
 
     @Override
@@ -157,10 +161,11 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info);
         getActionBar().setDisplayHomeAsUpEnabled(true);
-        mSiteId = getIntent().getIntExtra(SaveStateMapFragment.SITE_CLICKED, 1);
-        mSiteTitle = getIntent().getStringExtra(SaveStateMapFragment.SITE_TITLE);
-        GET_SITE_URL += mSite;
+        Bundle extras = getIntent().getExtras();
+        mSiteId = extras.getInt(SaveStateMapFragment.SITE_CLICKED, 1);
+        mSiteTitle = extras.getString(SaveStateMapFragment.SITE_TITLE);
 
+        getActionBar().setTitle(mSiteTitle);
         // Set up the action bar.
         final ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -209,7 +214,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
      */
     private void getUserImages() {
         AsyncGetImages asyncTask = new AsyncGetImages();
-        String[] selectArgs = {String.valueOf(1)};
+        String[] selectArgs = {String.valueOf(mSiteId)};
         DBTaskQuery task = new DBTaskQuery(ImageEntry.TABLE_NAME_WITH_PREFIX,
                 ImageEntry.TABLE_PROJECTION, ImageEntry.SELECT_BY_SITE,
                 selectArgs, null, null, ImageEntry.DEFUALT_TABLE_ORDER);
@@ -232,6 +237,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         switch (id) {
         case R.id.action_sync:
             mViewPager.setCurrentItem(PHOTOS_TAB);
+            synchronize();
             break;
         case R.id.action_take_photo:
             takePhoto();
@@ -245,6 +251,20 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Method that starts the synchronize
+     */
+    private void synchronize() {
+        boolean connection = AppUtils.checkNetworkConnection(getApplicationContext());
+        if (!connection) {
+            NoNetworkDialog dialog = new NoNetworkDialog();
+            dialog.show(getFragmentManager(), "Info activity");
+            return;
+        }
+        Synchronize sync = Synchronize.getInstance(this);
+        sync.synchronizeData();
     }
 
     @Override
@@ -408,7 +428,14 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
 
     @Override
     public void onInsertReady(long id) {
-        mAdpater.notifyDataSetChanged();
+        if (mAdpater != null) {
+            mAdpater.notifyDataSetChanged();
+            return;
+        }
+
+        if (mGrid != null) {
+            setUpGrid();
+        }
     }
 
     @Override
@@ -436,7 +463,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         protected void onPostExecute(Cursor data) {
-            Log.d(TAG, "" + data.getCount());
+            Log.d("COUNT", "" + data.getCount());
             if (data != null && data.getCount() > 0) {
                 while (data.moveToNext()) {
                     String path = data.getString(data.getColumnIndex(ImageEntry.COLUMN_PATH));
@@ -489,6 +516,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         mRetry.setOnClickListener(this);
         mProgressBar = (ProgressBar) mProgress.findViewById(R.id.progress_bar);
         mStatus = (TextView) mProgress.findViewById(R.id.progress_message);
+        mWikipedia = (WebView) root.findViewById(R.id.wikipedia_frame);
         getSite();
     }
 
@@ -504,7 +532,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         @Override
         protected Site doInBackground(Void... params) {
             HTTPRequestHelper helper = new HTTPRequestHelper(null, this);
-            helper.performGet(GET_SITE_URL);
+            helper.performGet(GET_SITE_URL + mSiteId);
 
             return mSite;
         }
@@ -513,7 +541,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         protected void onPostExecute(final Site model) {
             if (model != null) {
                 if (!model.hasErrors()) {
-                    AppUtils.showProgress(getApplicationContext(), mProgress, mInformationView, false);
+                    AppUtils.showProgress(getApplicationContext(), mProgress, mWikipedia, false);
                     displayModelInView(model);
                     return;
                 }
@@ -532,7 +560,6 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
             if (!response.isEmpty()) {
                 mSite = ParseJSONSites.parseSingleSiteResponse(response);
             } else {
-                displayServerError();
                 this.cancel(true);
             }
         }
@@ -592,7 +619,7 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
      */
     public void displayModelInView(Site model)
     {
-        mSite = model;
+        /*mSite = model;
         TextView name = (TextView) mInformationView.findViewById(R.id.site_name);
         TextView info = (TextView) mInformationView.findViewById(R.id.sites_info);
         ImageView image = (ImageView) mInformationView.findViewById(R.id.site_image);
@@ -600,7 +627,12 @@ public class InfoActivity extends FragmentActivity implements ActionBar.TabListe
         mProgress.setVisibility(View.GONE);
         mInformationView.setVisibility(View.VISIBLE);
         name.setText(mSite.getTitle());
-        info.setText(mSite.getInformation());
-        // TODO load image
+        info.setText(mSite.getInformation());*/
+        // TODO build a decent parser for wikipedia content
+        mWikipedia.getSettings().setJavaScriptEnabled(true);
+        mWikipedia.setWebViewClient(new WebViewClient());
+        mWikipedia.loadUrl(WIKIPEDIA_PREFIX + model.getInformation());
+        mProgress.setVisibility(View.GONE);
+        mWikipedia.setVisibility(View.VISIBLE);
     }
 }

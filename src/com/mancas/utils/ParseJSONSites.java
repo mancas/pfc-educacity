@@ -58,7 +58,6 @@ public class ParseJSONSites {
                 site.setTitle(siteObj.getString(SITE_TITLE_TAG));
                 site.setLatitude(siteObj.getDouble(SITE_LATITUDE_TAG));
                 site.setLongitude(siteObj.getDouble(SITE_LONGITUDE_TAG));
-                site.setInformation(siteObj.getString(SITE_INFORMATION_TAG));
                 sites.add(site);
             }
         } catch (JSONException e) {

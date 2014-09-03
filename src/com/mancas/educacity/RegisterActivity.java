@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
@@ -24,6 +25,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.mancas.database.DBHelper;
+import com.mancas.database.Account.AccountEntry;
 import com.mancas.database.DBHelper.DBHelperCallback;
 import com.mancas.database.DBHelper.DBOpenHelper;
 import com.mancas.dialogs.NoNetworkDialog;
@@ -243,6 +245,7 @@ public class RegisterActivity extends Activity
      */
     public class UserRegisterTask extends AsyncTask<Void, Void, RegisterModel> implements DBHelperCallback, HTTPResponseCallback {
         private RegisterModel mModel;
+        private boolean login = false;
         @Override
         protected RegisterModel doInBackground(Void... params) {
             boolean connection = AppUtils.checkNetworkConnection(getApplicationContext());
@@ -263,6 +266,20 @@ public class RegisterActivity extends Activity
             }
             HTTPRequestHelper httpHelper = new HTTPRequestHelper(httpParams, this);
             httpHelper.performPost(REGISTER_URL);
+            JSONObject loginParams = new JSONObject();
+            try {
+                loginParams.put(LoginActivity.CLIENT_ID, mModel.getClientId());
+                loginParams.put(LoginActivity.CLIENT_SECRET, mModel.getClientSecret());
+                loginParams.put(LoginActivity.GRANT_TYPE, "password");
+                loginParams.put(LoginActivity.USERNAME, mEmail);
+                loginParams.put(LoginActivity.PASSWORD, mPassword);
+            } catch (JSONException e) {
+                return null;
+            }
+            
+            login = true;
+            httpHelper.setParams(loginParams);
+            httpHelper.performPost(LoginActivity.TOKEN_URL);
             return mModel;
         }
 
@@ -299,9 +316,12 @@ public class RegisterActivity extends Activity
             Log.d(TAG, response);
             // { "code":200, "email":"ma@ma.com"}
             if (!response.isEmpty()) {
-                mModel = JSONParse.checkRegister(response);
+                if (login) {
+                    mModel = JSONParse.checkLoginFromRegister(response, mModel);
+                } else {
+                    mModel = JSONParse.checkRegister(response);
+                }
             } else {
-                AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.error_network_response));
                 this.cancel(true);
             }
         }
@@ -313,19 +333,28 @@ public class RegisterActivity extends Activity
      */
     public class UserRegisterInAppTask extends AsyncTask<RegisterModel, Void, Boolean> implements DBHelperCallback {
         private DBHelper helper;
+        private RegisterModel mModel;
         @Override
         protected Boolean doInBackground(RegisterModel... params) {
-            RegisterModel model = params[0];
+            mModel = params[0];
             helper = DBHelper.getInstance(getApplicationContext(), this);
             DBOpenHelper opener = helper.getDBOpenHelper();
             helper.setDataBase(opener.getWritableDatabase());
             try {
-                long image_id = helper.createNewAccount(model.getId(), mEmail, "", "", model.getAccessToken(), model.getRefreshToken());
+                long image_id = helper.createNewAccount(-1, mEmail, "", "",
+                        mModel.getAccessToken(), mModel.getRefreshToken(), mModel.getClientId(), mModel.getClientSecret());
                 if (image_id == -1) {
                     this.cancel(true);
                     return false;
                 }
-                AppUtils.setAccountID(getApplicationContext(), model.getId());
+                String[] args = {String.valueOf(image_id)};
+                Cursor account = helper.select(AccountEntry.TABLE_NAME_WITH_PREFIX, AccountEntry.TABLE_PROJECTION,
+                        AccountEntry.COLUMN_IMAGE + "=?", args, null, null, null);
+                if (account != null && account.getCount() > 0) {
+                    account.moveToFirst();
+                    mModel.setId(account.getInt(account.getColumnIndex(AccountEntry._ID)));
+                }
+                AppUtils.setAccountID(getApplicationContext(), mModel.getId());
                 AppUtils.setAccountImageID(getApplicationContext(), image_id);
             } catch (InterruptedException e) {
                 this.cancel(false);
@@ -344,10 +373,14 @@ public class RegisterActivity extends Activity
             AppUtils.showProgress(getApplicationContext(), mRegisterStatusView, mRegisterFormView, false);
 
             if (success) {
-                setResult(LoginActivity.REGISTER_REQUEST, null);
+                Intent intent = new Intent();
+                Bundle extras = new Bundle();
+                extras.putString(JSONParse.ACCESS_TOKEN_TAG, mModel.getAccessToken());
+                intent.putExtras(extras);
+                setResult(LoginActivity.REGISTER_REQUEST, intent);
                 finish();
             } else {
-                AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.db_insert_error));
+                this.cancel(true);
             }
         }
 

@@ -10,7 +10,7 @@
             android:title="@string/pref_account_public"
             android:defaultValue="true" />
         
-		<ListPreference
+		<!-- <ListPreference
 			android:defaultValue="-1"
 			android:entries="@array/pref_account_auto_sync_list_entries"
 			android:entryValues="@array/pref_account_auto_sync_list_values"
@@ -18,7 +18,7 @@
 			android:negativeButtonText="@null"
 			android:positiveButtonText="@null"
 			android:title="@string/pref_account_auto_sync" 
-			android:summary="%s" />
+			android:summary="%s" /> -->
     </PreferenceCategory>
     
     <!-- Notifications -->

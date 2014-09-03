@@ -43,8 +43,14 @@
             android:visibility="gone" />
 
     </LinearLayout>
+    
+    <WebView
+        android:id="@+id/wikipedia_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
-    <ScrollView
+    <!-- <ScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -93,5 +99,5 @@
                     android:layout_marginBottom="4dp" />
             </LinearLayout>
         </RelativeLayout>
-    </ScrollView>
+    </ScrollView>-->
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.mancas.educacity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
@@ -51,7 +53,7 @@ public class SaveStateMapFragment extends SupportMapFragment implements
     /**
      * List of markers to display in the map
      */
-    private List<Site> mSites;
+    private List<Site> mSites = new ArrayList<Site>();
     /**
      * Map to handle marker click events. The marker ID will be store together with the site ID
      */
@@ -121,7 +123,7 @@ public class SaveStateMapFragment extends SupportMapFragment implements
 
     public class GetSitesTask extends AsyncTask<Void, Void, List<Site>> implements HTTPResponseCallback
     {
-        private List<Site> mSites;
+        private List<Site> mSites = new ArrayList<Site>();
 
         public GetSitesTask()
         {
@@ -147,6 +149,7 @@ public class SaveStateMapFragment extends SupportMapFragment implements
 
         @Override
         public void onResponseReady(String response) {
+            Log.d("MAP", response);
             if (!response.isEmpty()) {
                 mSites = ParseJSONSites.parseMultipleSitesResponse(response);
             }
@@ -184,8 +187,10 @@ public class SaveStateMapFragment extends SupportMapFragment implements
     @Override
     public boolean onMarkerClick(Marker marker) {
         Intent intent = new Intent(getActivity(), InfoActivity.class);
-        intent.putExtra(SITE_CLICKED, mMarkers.get(marker.getId()));
-        intent.putExtra(SITE_TITLE, marker.getTitle());
+        Bundle extras = new Bundle();
+        extras.putString(SITE_TITLE, marker.getTitle());
+        extras.putInt(SITE_CLICKED,mMarkers.get(marker.getId()));
+        intent.putExtras(extras);
         startActivity(intent);
 
         return true;

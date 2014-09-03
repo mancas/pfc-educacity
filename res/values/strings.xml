@@ -29,6 +29,7 @@
     <string name="no_network_available">No tienes conexión a internet. Conectaté y vuelve a intentarlo</string>
     <string name="no_network_title">Fallo de red</string>
     <string name="synchronize">Sincronizando</string>
+    <string name="success_synchronized">Sincronización realizada con éxito</string>
 
     <!-- Drawer -->
     <string name="drawer_map">Sevilla</string>

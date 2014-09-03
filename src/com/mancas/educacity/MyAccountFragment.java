@@ -11,6 +11,7 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -33,6 +34,7 @@ import com.mancas.database.DBHelper;
 import com.mancas.database.DBTaskQuery;
 import com.mancas.database.DBHelper.DBHelperCallback;
 import com.mancas.database.Image.ImageEntry;
+import com.mancas.database.Site.SiteEntry;
 import com.mancas.dialogs.EditProfileNameDialog;
 import com.mancas.dialogs.EditProfileNameDialog.EditProfileDialogCallbacks;
 import com.mancas.dialogs.PickPictureDialog;
@@ -97,6 +99,8 @@ public class MyAccountFragment extends Fragment
      * An instance of {@link DBHelper} used to manage changes in user data
      */
     private DBHelper mDatabaseManager;
+    private TextView mImagesCount;
+    private TextView mSitesCount;
 
     @Override
     public void onAttach(Activity activity) {
@@ -168,10 +172,15 @@ public class MyAccountFragment extends Fragment
                 dialog.show(getFragmentManager(), TAG);
             }
         });
+        mImagesCount = (TextView) rootView.findViewById(R.id.photographs_taken);
+        mSitesCount = (TextView) rootView.findViewById(R.id.visited_sites);
         //Get the user name
         getCurrentProfileName();
         //Get the user profile image
         getCurrentProfileImage();
+        
+        new GetImagesAsync().execute();
+        new GetSitesAsync().execute();
         return rootView;
     }
 
@@ -327,8 +336,9 @@ public class MyAccountFragment extends Fragment
         DBTaskQuery task = new DBTaskQuery(ImageEntry.TABLE_NAME_WITH_PREFIX, ImageEntry.TABLE_PROJECTION,
                 ImageEntry.DEFAULT_TABLE_SELECTION, selectArgs, null, null, ImageEntry.DEFUALT_TABLE_ORDER);
         String path = mDatabaseManager.getProfileImagePath(task);
+
         if (TextUtils.isEmpty(path)) {
-            getResources().getString(R.string.profile_image_default);
+            path = getActivity().getResources().getString(R.string.profile_image_default);
         }
 
         mImageProfilePath = path;
@@ -351,5 +361,79 @@ public class MyAccountFragment extends Fragment
 
     @Override
     public void onUpdateReady(int rows) {
+    }
+
+    public class GetImagesAsync extends AsyncTask<Void, Void, Integer>
+    {
+        @Override
+        protected Integer doInBackground(Void... params) {
+            if (mDatabaseManager.getDataBase() == null) {
+                mDatabaseManager.setDataBase(mDatabaseManager.getDBOpenHelper().getWritableDatabase());
+            }
+            
+            Cursor data = mDatabaseManager.getDataBase().query(ImageEntry.TABLE_NAME_WITH_PREFIX,
+                    ImageEntry.TABLE_PROJECTION, null, null, null, null, null);
+            if (data != null) {
+                return data.getCount();
+            }
+
+            return 0;
+        }
+        
+        @Override
+        protected void onPostExecute(Integer count)
+        {
+            displayImagesCount(count);
+        }
+    }
+
+    public void displayImagesCount(Integer count) {
+        String resume = "";
+        switch(count) {
+        case 1:
+            resume = "1 fotografía";
+            break;
+            default:
+                resume = count + " fotografías";
+                break;
+        }
+        mImagesCount.setText(resume);
+    }
+    
+    public class GetSitesAsync extends AsyncTask<Void, Void, Integer>
+    {
+        @Override
+        protected Integer doInBackground(Void... params) {
+            if (mDatabaseManager.getDataBase() == null) {
+                mDatabaseManager.setDataBase(mDatabaseManager.getDBOpenHelper().getWritableDatabase());
+            }
+            
+            Cursor data = mDatabaseManager.getDataBase().query(SiteEntry.TABLE_NAME_WITH_PREFIX,
+                    SiteEntry.TABLE_PROJECTION, null, null, null, null, null);
+            if (data != null) {
+                return data.getCount();
+            }
+
+            return 0;
+        }
+        
+        @Override
+        protected void onPostExecute(Integer count)
+        {
+            displaySitesCount(count);
+        }
+    }
+
+    public void displaySitesCount(Integer count) {
+        String resume = "";
+        switch(count) {
+        case 1:
+            resume = "1 sitio";
+            break;
+            default:
+                resume = count + " sitios";
+                break;
+        }
+        mSitesCount.setText(resume);
     }
 }

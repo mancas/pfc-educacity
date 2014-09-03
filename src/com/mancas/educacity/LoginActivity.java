@@ -1,21 +1,42 @@
 package com.mancas.educacity;
 
+import java.util.concurrent.ExecutionException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.mancas.database.Account.AccountEntry;
+import com.mancas.database.DBHelper;
+import com.mancas.database.DBHelper.DBHelperCallback;
+import com.mancas.database.DBHelper.DBOpenHelper;
+import com.mancas.dialogs.NoNetworkDialog;
+import com.mancas.models.LoginModel;
+import com.mancas.models.RegisterModel;
 import com.mancas.utils.AppUtils;
+import com.mancas.utils.HTTPRequestHelper;
+import com.mancas.utils.JSONParse;
+import com.mancas.utils.HTTPRequestHelper.HTTPResponseCallback;
 import com.mancas.utils.Utils;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,17 +50,6 @@ import android.support.v4.app.NavUtils;
  * @version 1.0
  */
 public class LoginActivity extends Activity {
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[] {
-            "foo@example.com:hello", "bar@example.com:world" };
-
-    /**
-     * The default email to populate the email field with.
-     */
-    public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -84,6 +94,19 @@ public class LoginActivity extends Activity {
      * Tag for handle fragment load when the user has logged into the system
      */
     public static final int LOGIN_REQUEST = 2;
+    /**
+     * URL used to register users
+     */
+    public static final String TOKEN_URL = "http://rest.educacity-sevilla.com/oauth/v2/token";
+    /**
+     * URL used to login users
+     */
+    public static final String LOGIN_URL = "http://rest.educacity-sevilla.com/oauth/v2/login_app";
+    public static final String CLIENT_ID = "client_id";
+    public static final String CLIENT_SECRET = "client_secret";
+    public static final String GRANT_TYPE = "grant_type";
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,9 +116,7 @@ public class LoginActivity extends Activity {
         setupActionBar();
 
         // Set up the login form.
-        mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
         mEmailView = (EditText) findViewById(R.id.email);
-        mEmailView.setText(mEmail);
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView
@@ -132,6 +153,20 @@ public class LoginActivity extends Activity {
                 });
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        if (getCurrentFocus() != null) {
+            InputMethodManager inputManager = 
+                    (InputMethodManager) getApplicationContext().
+                        getSystemService(Context.INPUT_METHOD_SERVICE); 
+            inputManager.hideSoftInputFromWindow(
+                    getCurrentFocus().getWindowToken(),
+                    InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
+
     /**
      * Set up the {@link android.app.ActionBar}, if the API is available.
      */
@@ -147,15 +182,6 @@ public class LoginActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. Use NavUtils to allow users
-            // to navigate up one level in the application structure. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
-            // TODO: If Settings has multiple levels, Up should navigate up
-            // that hierarchy.
             NavUtils.navigateUpFromSameTask(this);
             return true;
         }
@@ -229,8 +255,13 @@ public class LoginActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK && requestCode == REGISTER_REQUEST) {
-            AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.create_account_success));
+        Log.d("LOGIN", requestCode + "");
+        if (requestCode == REGISTER_REQUEST) {
+            Bundle extras = data.getExtras();
+            if (!extras.getString(JSONParse.ACCESS_TOKEN_TAG).isEmpty()) {
+                setResult(LoginActivity.LOGIN_REQUEST, null);
+                finish();
+            }
         }
     }
 
@@ -238,42 +269,55 @@ public class LoginActivity extends Activity {
      * Represents an asynchronous login task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> implements HTTPResponseCallback {
+        private boolean isCheckingLogin = true;
+        private LoginModel mModel = new LoginModel();
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
+            boolean connection = AppUtils.checkNetworkConnection(getApplicationContext());
+            if (!connection) {
+                NoNetworkDialog dialog = new NoNetworkDialog();
+                dialog.show(getFragmentManager(), "No Network");
+                this.cancel(true);
+                return null;
+            }
+            HTTPRequestHelper httpHelper = new HTTPRequestHelper(null, this);
+            JSONObject loginParams = new JSONObject();
             try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
+                loginParams.put(LoginActivity.USERNAME, mEmail);
+                loginParams.put(LoginActivity.PASSWORD, mPassword);
+            } catch (JSONException e) {
+                return null;
             }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
+            
+            httpHelper.setParams(loginParams);
+            httpHelper.performPost(LOGIN_URL);
+            if (mModel.hasErrors()) {
+                this.cancel(true);
             }
-
-            // TODO: register the new account here.
+            isCheckingLogin = false;
+            try {
+                loginParams.put(LoginActivity.USERNAME, mEmail);
+                loginParams.put(LoginActivity.PASSWORD, mPassword);
+                loginParams.put(LoginActivity.CLIENT_ID, mModel.getClientId());
+                loginParams.put(LoginActivity.CLIENT_SECRET, mModel.getClientSecret());
+                loginParams.put(LoginActivity.GRANT_TYPE, "password");
+            } catch (JSONException e) {
+                return null;
+            }
+            httpHelper.setParams(loginParams);
+            httpHelper.performPost(TOKEN_URL);
             return true;
         }
 
         @Override
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
-            AppUtils.showProgress(getApplicationContext(), mLoginStatusView, mLoginFormView, false);
 
             if (success) {
-                setResult(LOGIN_REQUEST);
-                finish();
+                displayErrorsIfNeeded(mModel);
             } else {
-                mPasswordView
-                        .setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                displayServerError();
             }
         }
 
@@ -281,6 +325,118 @@ public class LoginActivity extends Activity {
         protected void onCancelled() {
             mAuthTask = null;
             AppUtils.showProgress(getApplicationContext(), mLoginStatusView, mLoginFormView, false);
+            displayServerError();
+        }
+
+        @Override
+        public void onResponseReady(String response) {
+            if (!response.isEmpty()) {
+                if (isCheckingLogin) {
+                    mModel = JSONParse.checkLoginErrors(response, mModel);
+                } else {
+                    mModel = JSONParse.parseLogin(response, mModel);
+                }
+            }
+        }
+    }
+
+    public void displayServerError() {
+        AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.error_network_response));
+    }
+
+    public void displayErrorsIfNeeded(LoginModel model) {
+        if (!model.hasErrors()) {
+            new UserLoginInAppTask().execute(model);
+        } else {
+            AppUtils.showProgress(getApplicationContext(), mLoginStatusView, mLoginFormView, false);
+            mPasswordView
+                .setError(getString(R.string.rest_login_fail));
+            mPasswordView.requestFocus();
+        }
+    }
+
+    /**
+     * Represents an asynchronous task used to register
+     * a new the user.
+     */
+    public class UserLoginInAppTask extends AsyncTask<LoginModel, Void, Boolean> implements DBHelperCallback {
+        private DBHelper helper;
+        private LoginModel mModel;
+        @Override
+        protected Boolean doInBackground(LoginModel... params) {
+            mModel = params[0];
+            helper = DBHelper.getInstance(getApplicationContext(), this);
+            DBOpenHelper opener = helper.getDBOpenHelper();
+            helper.setDataBase(opener.getWritableDatabase());
+            if (AppUtils.getAccountID(getApplicationContext()) != -1) {
+                //The account exists, we need to refresh tokens
+                ContentValues values = new ContentValues();
+                values.put(AccountEntry.COLUMN_ACCESS_TOKEN, mModel.getAccessToken());
+                values.put(AccountEntry.COLUMN_REFRESH_TOKEN, mModel.getRefreshToken());
+                String[] args = {String.valueOf(AppUtils.getAccountID(getApplicationContext()))};
+                helper.update(AccountEntry.TABLE_NAME_WITH_PREFIX, values, AccountEntry.DEFAULT_TABLE_SELECTION, args);
+                return true;
+            }
+            try {
+                long image_id = helper.createNewAccount(-1, mEmail, "", "",
+                        mModel.getAccessToken(), mModel.getRefreshToken(), mModel.getClientId(), mModel.getClientSecret());
+                if (image_id == -1) {
+                    this.cancel(true);
+                    return false;
+                }
+                String[] args = {String.valueOf(image_id)};
+                Cursor account = helper.select(AccountEntry.TABLE_NAME_WITH_PREFIX, AccountEntry.TABLE_PROJECTION,
+                        AccountEntry.COLUMN_IMAGE + "=?", args, null, null, null);
+                if (account != null && account.getCount() > 0) {
+                    account.moveToFirst();
+                    mModel.setId(account.getInt(account.getColumnIndex(AccountEntry._ID)));
+                }
+                AppUtils.setAccountID(getApplicationContext(), mModel.getId());
+                AppUtils.setAccountImageID(getApplicationContext(), image_id);
+            } catch (InterruptedException e) {
+                this.cancel(false);
+                return false;
+            } catch (ExecutionException e) {
+                this.cancel(false);
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            if (success) {
+                Intent intent = new Intent();
+                Bundle extras = new Bundle();
+                extras.putString(JSONParse.ACCESS_TOKEN_TAG, mModel.getAccessToken());
+                intent.putExtras(extras);
+                setResult(LoginActivity.LOGIN_REQUEST, intent);
+                finish();
+            } else {
+                this.cancel(true);
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            AppUtils.showProgress(getApplicationContext(), mLoginStatusView, mLoginFormView, false);
+            AppUtils.showToast(getApplicationContext(), getResources().getString(R.string.db_insert_error));
+        }
+        @Override
+        public void onDatabaseOpen(SQLiteDatabase database) {
+        }
+
+        @Override
+        public void onSelectReady(Cursor data) {
+        }
+
+        @Override
+        public void onInsertReady(long id) {
+        }
+
+        @Override
+        public void onUpdateReady(int rows) {
         }
     }
 }

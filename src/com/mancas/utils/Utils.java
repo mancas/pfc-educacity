@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.mancas.models.RegisterModel;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -316,5 +318,21 @@ public class Utils
         display.getSize(p);
 
         return p.y;
+    }
+
+    /**
+     * Generates a new TOKEN url to perform requests
+     * @param url
+     * @param clientId
+     * @param clientSecret
+     * @param grantType
+     * @return the complete url
+     */
+    public static String generateTokenURL(String url, String clientId, String clientSecret,
+            String grantType) {
+        url += "?client_id=" +clientId + "&client_secret=" + clientSecret +
+                "&grant_type=" + grantType;
+
+        return url;
     }
 }

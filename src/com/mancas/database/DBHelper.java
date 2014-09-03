@@ -2,11 +2,6 @@ package com.mancas.database;
 
 import java.util.concurrent.ExecutionException;
 
-import com.mancas.database.Account.AccountEntry;
-import com.mancas.database.Image.ImageEntry;
-import com.mancas.database.Site.SiteEntry;
-import com.mancas.utils.AppUtils;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -15,6 +10,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.mancas.database.Account.AccountEntry;
+import com.mancas.database.Image.ImageEntry;
+import com.mancas.database.Site.SiteEntry;
+import com.mancas.utils.AppUtils;
 
 /**
  * Helper class that contains useful methods to manage Educacity SQLite database
@@ -35,7 +35,7 @@ public class DBHelper
     /**
      * Tag that define database version
      */
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 4;
     /**
      * An instance of the open database
      */
@@ -47,7 +47,7 @@ public class DBHelper
     /**
      * Database helper who implements the necessary callbacks
      */
-    private DBHelperCallback callbacks;
+    private static DBHelperCallback callbacks;
 
     /**
      * SQL sentence to delete all account entries
@@ -119,10 +119,13 @@ public class DBHelper
     {
         private static final String DB_TABLE_ACCOUNT =
                 "CREATE TABLE " + DBHelper.DB_PREFIX + AccountEntry.TABLE_NAME +
-                " (" + AccountEntry._ID + " INTEGER PRIMARY KEY, " + AccountEntry.COLUMN_NAME + " TEXT," +
+                " (" + AccountEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + AccountEntry.COLUMN_NAME + " TEXT," +
                 AccountEntry.COLUMN_EMAIL + " TEXT NOT NULL," +
-                AccountEntry.COLUMN_IMAGE + " TEXT," + AccountEntry.COLUMN_ACCESS_TOKEN + " TEXT," +
+                AccountEntry.COLUMN_IMAGE + " INTEGER," + AccountEntry.COLUMN_ACCESS_TOKEN + " TEXT," +
                 AccountEntry.COLUMN_REFRESH_TOKEN + " TEXT," +
+                AccountEntry.COLUMN_CLIENT_ID + " TEXT," +
+                AccountEntry.COLUMN_CLIENT_SECRET + " TEXT," +
+                AccountEntry.COLUMN_PUBLIC + " INTEGER DEFAULT 1," +
                 AccountEntry.COLUMN_SYNC + " INTEGER DEFAULT 0);";
         private static final String DB_TABLE_IMAGES = 
                 "CREATE TABLE " + DBHelper.DB_PREFIX + ImageEntry.TABLE_NAME +
@@ -164,6 +167,7 @@ public class DBHelper
         // TODO modify this method to preserve data
             db.execSQL("DROP TABLE IF EXISTS " + DBHelper.DB_PREFIX + AccountEntry.TABLE_NAME);
             db.execSQL("DROP TABLE IF EXISTS " + DBHelper.DB_PREFIX + ImageEntry.TABLE_NAME);
+            db.execSQL("DROP TABLE IF EXISTS " + DBHelper.DB_PREFIX + SiteEntry.TABLE_NAME);
             onCreate(db);
         }
     }
@@ -272,7 +276,7 @@ public class DBHelper
             String[] selectArgs, String groupBy, String having, String orderBy)
     {
         if (db == null) {
-            return null;
+            db = getDBOpenHelper().getWritableDatabase();
         }
         Cursor data = db.query(table, projection, select, selectArgs, groupBy, having, orderBy);
 
@@ -282,7 +286,7 @@ public class DBHelper
     public long insert(String table, String nullColumnHack, ContentValues values)
     {
         if (db == null) {
-            return -1;
+            db = getDBOpenHelper().getWritableDatabase();
         }
 
         return db.insert(table, nullColumnHack, values);
@@ -291,16 +295,25 @@ public class DBHelper
     public int update(String table, ContentValues values, String whereClause, String[] whereArgs)
     {
         if (db == null) {
-            return -1;
+            db = getDBOpenHelper().getWritableDatabase();
         }
 
         return db.update(table, values, whereClause, whereArgs);
     }
 
+    public int delete(String table, String whereClause, String[] whereArgs)
+    {
+        if (db == null) {
+            db = getDBOpenHelper().getWritableDatabase();
+        }
+
+        return db.delete(table, whereClause, whereArgs);
+    }
+
     public Cursor query(String sql, String[] selectionArgs)
     {
         if (db == null) {
-            return null;
+            db = getDBOpenHelper().getWritableDatabase();
         }
         Cursor data = db.rawQuery(sql, selectionArgs);
 
@@ -312,11 +325,16 @@ public class DBHelper
      * @param email the email of the user has used to register a new Educacity account
      * @param name the name of the user
      * @param profile_image path to the image file of the account
+     * @param access_token access token
+     * @param refresh_token refesh token
+     * @param client_id client ID
+     * @param client_secret client secret
      * @return the new account ID
      * @throws InterruptedException if the asynchronous task that perform the database opening work has been interrupted
      * @throws ExecutionException if the asynchronous task that perform the database opening work has crashed
      */
-    public long createNewAccount(int id, String email, String name, String profile_image, String access_token, String refresh_token)
+    public long createNewAccount(int id, String email, String name, String profile_image,
+            String access_token, String refresh_token, String client_id, String client_secret)
             throws InterruptedException, ExecutionException
     {
         ContentValues profileImage = new ContentValues();
@@ -327,11 +345,14 @@ public class DBHelper
             return -1;
         }
         ContentValues account = new ContentValues();
-        account.put(AccountEntry._ID, id);
+        if (id != -1)
+            account.put(AccountEntry._ID, id);
         account.put(AccountEntry.COLUMN_EMAIL, email);
         account.put(AccountEntry.COLUMN_IMAGE, image);
         account.put(AccountEntry.COLUMN_ACCESS_TOKEN, access_token);
         account.put(AccountEntry.COLUMN_REFRESH_TOKEN, refresh_token);
+        account.put(AccountEntry.COLUMN_CLIENT_ID, client_id);
+        account.put(AccountEntry.COLUMN_CLIENT_SECRET, client_secret);
         account.put(AccountEntry.COLUMN_SYNC, false);
         long insertedID = insert(AccountEntry.TABLE_NAME_WITH_PREFIX, null, account);
         if (insertedID == -1) {
@@ -407,11 +428,9 @@ public class DBHelper
                 return data.getString(data.getColumnIndex(AccountEntry.COLUMN_NAME));
             }
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            return "";
         } catch (ExecutionException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            return "";
         }
 
         return "";
@@ -488,6 +507,7 @@ public class DBHelper
 
         @Override
         protected void onPostExecute(Integer rowsAffected) {
+            Log.d(TAG, rowsAffected + "");
             callbacks.onUpdateReady(rowsAffected);
         }
     }
@@ -526,6 +546,23 @@ public class DBHelper
         protected void onPostExecute(Long id) {
             callbacks.onInsertReady(id);
         }
+    }
+
+    /**
+     * Gets the current callback handle
+     * @return the current callback instance
+     */
+    public static DBHelperCallback getCallback() {
+        return callbacks;
+    }
+
+    /**
+     * Method to restore callback
+     * @param mCallbacks the previous callback
+     */
+    public void restoreCallback(DBHelperCallback mCallbacks)
+    {
+        callbacks = mCallbacks;
     }
 }
 

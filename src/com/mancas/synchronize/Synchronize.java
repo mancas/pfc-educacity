@@ -15,16 +15,20 @@ import org.json.JSONObject;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
+import android.sax.StartElementListener;
 import android.util.Log;
 
 import com.mancas.database.Account.AccountEntry;
 import com.mancas.database.DBHelper;
 import com.mancas.database.DBHelper.DBHelperCallback;
 import com.mancas.database.Image.ImageEntry;
+import com.mancas.educacity.LoginActivity;
 import com.mancas.educacity.R;
+import com.mancas.models.LoginModel;
 import com.mancas.utils.AppUtils;
 import com.mancas.utils.HTTPRequestHelper;
 import com.mancas.utils.HTTPRequestHelper.HTTPResponseCallback;
@@ -56,14 +60,18 @@ public class Synchronize implements HTTPResponseCallback
     /**
      * Tag for reference the url when uploading a file
      */
-    public static final String UPLOAD_IMAGE_URL = "";
+    public static final String UPLOAD_IMAGE_URL = "http://rest.educacity-sevilla.com/security/synchronize/file";
     /**
      * Tag for reference the url when updating profile
      */
-    public static final String UPLOAD_PROFILE_URL = "";
+    public static final String UPLOAD_PROFILE_URL = "http://rest.educacity-sevilla.com/security/synchronize/profile";
     private static final String NAME_KEY = "name";
+    private static final String PUBLIC_KEY = "public_profile";
+    private static String mCurrentAccessToken;
+    private static String mCurrentRefreshToken;
     
     private boolean mResponseProfile = false;
+    private DBHelperCallback mPreviousCallback;
 
     /**
      * Gets the current instance of this class if exists
@@ -74,6 +82,9 @@ public class Synchronize implements HTTPResponseCallback
     {
         if (instance == null) {
             instance = new Synchronize(context);
+        } else {
+            instance.setContext(context);
+            instance.configureDialog();
         }
 
         return instance;
@@ -82,16 +93,106 @@ public class Synchronize implements HTTPResponseCallback
     private Synchronize(Context context)
     {
         mProgressDialog = new ProgressDialog(context);
+        configureDialog();
+        mContext = context;
+    }
+
+    public void configureDialog() {
         mProgressDialog.setTitle(R.string.synchronize);
         mProgressDialog.setCancelable(false);
         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mProgressDialog.setProgress(0);
+    }
+
+    public void setContext(Context context)
+    {
         mContext = context;
     }
 
     public void synchronizeData()
     {
-        new UploadNotSync().execute();
+        new GetUserDataAsync().execute();
+    }
+    
+    public class GetUserDataAsync extends AsyncTask<Void, Void, Void> implements DBHelperCallback, HTTPResponseCallback
+    {
+        private DBHelper mHelper;
+        private LoginModel mModel = new LoginModel();
+        @Override
+        protected Void doInBackground(Void... params) {
+            mHelper = DBHelper.getInstance(mContext, this);
+            String select = AccountEntry._ID + "=?";
+            String[] args = {String.valueOf(AppUtils.getAccountID(mContext))};
+            Cursor profile = mHelper.select(AccountEntry.TABLE_NAME_WITH_PREFIX,
+                    AccountEntry.TABLE_PROJECTION, select, args, null, null, null);
+
+            if (profile != null && profile.getCount() > 0) {
+                profile.moveToFirst();
+                mCurrentAccessToken = profile.getString(profile.getColumnIndex(AccountEntry.COLUMN_ACCESS_TOKEN));
+                mCurrentRefreshToken = profile.getString(profile.getColumnIndex(AccountEntry.COLUMN_REFRESH_TOKEN));
+                mModel.setAccessToken(mCurrentAccessToken);
+                mModel.setRefreshToken(mCurrentRefreshToken);
+                mModel.setClientId(profile.getString(profile.getColumnIndex(AccountEntry.COLUMN_CLIENT_ID)));
+                mModel.setClientSecret(profile.getString(profile.getColumnIndex(AccountEntry.COLUMN_CLIENT_SECRET)));
+            }
+            HTTPRequestHelper helper = new HTTPRequestHelper(null, this);
+            JSONObject extras = new JSONObject();
+            try {
+                extras.put("refresh_token", mModel.getRefreshToken());
+                extras.put(LoginActivity.CLIENT_ID, mModel.getClientId());
+                extras.put(LoginActivity.CLIENT_SECRET, mModel.getClientSecret());
+                extras.put(LoginActivity.GRANT_TYPE, "refresh_token");
+            } catch (JSONException e) {
+                this.cancel(true);
+                return null;
+            }
+            helper.setParams(extras);
+            helper.performPost(LoginActivity.TOKEN_URL);
+            if (!mModel.hasErrors()) {
+                mCurrentAccessToken = mModel.getAccessToken();
+                mCurrentRefreshToken = mModel.getRefreshToken();
+                //we need to update db
+                ContentValues values = new ContentValues();
+                values.put(AccountEntry.COLUMN_ACCESS_TOKEN, mModel.getAccessToken());
+                values.put(AccountEntry.COLUMN_REFRESH_TOKEN, mModel.getRefreshToken());
+                mHelper.update(AccountEntry.TABLE_NAME_WITH_PREFIX, values, select, args);
+            } else {
+                this.cancel(true);
+            }
+            return null;
+        }
+        
+        @Override
+        protected void onCancelled()
+        {
+            performLogin();
+        }
+        
+        @Override
+        protected void onPostExecute(Void result)
+        {
+            processData();
+        }
+        
+        @Override
+        public void onDatabaseOpen(SQLiteDatabase database) {
+        }
+        @Override
+        public void onSelectReady(Cursor data) {
+        }
+        @Override
+        public void onInsertReady(long id) {
+        }
+        @Override
+        public void onUpdateReady(int rows) {
+        }
+
+        @Override
+        public void onResponseReady(String response) {
+            if (!response.isEmpty()) {
+                mModel = JSONParse.parseLogin(response, mModel);
+            }
+        }
     }
 
     private boolean uploadImage(String path)
@@ -110,12 +211,13 @@ public class Synchronize implements HTTPResponseCallback
         }
         try { // open a URL connection to the Servlet
              FileInputStream fileInputStream = new FileInputStream(sourceFile);
-             URL url = new URL(UPLOAD_IMAGE_URL);
+             URL url = new URL(UPLOAD_IMAGE_URL + "?access_token=" + mCurrentAccessToken);
              conn = (HttpURLConnection) url.openConnection(); // Open a HTTP  connection to  the URL
              conn.setDoInput(true); // Allow Inputs
              conn.setDoOutput(true); // Allow Outputs
              conn.setUseCaches(false); // Don't use a Cached Copy
              conn.setRequestMethod("POST");
+             Log.d("SYNC", mCurrentAccessToken);
              conn.setRequestProperty("Connection", "Keep-Alive");
              conn.setRequestProperty("ENCTYPE", "multipart/form-data");
              conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
@@ -148,7 +250,6 @@ public class Synchronize implements HTTPResponseCallback
              // Responses from the server (code and message)
              int serverResponseCode = conn.getResponseCode();
              String serverResponseMessage = conn.getResponseMessage();
-              
              Log.i("uploadFile", "HTTP Response is : " + serverResponseMessage + ": " + serverResponseCode);
              //close the streams //
              fileInputStream.close();
@@ -168,17 +269,34 @@ public class Synchronize implements HTTPResponseCallback
         return false;
     }
 
-    private boolean uploadProfile(String name)
+    public void performLogin() {
+        Intent i = new Intent(mContext, LoginActivity.class);
+        mContext.startActivity(i);
+    }
+
+    public void processData() {
+        new UploadNotSync().execute();
+    }
+
+    /**
+     * Updates the profile data in the server
+     * @param name the new name for the user
+     * @param profilePublic specific if the user has public profile or not
+     * @return true if everything went ok, or false if not
+     */
+    private boolean uploadProfile(String name, int profilePublic)
     {
         JSONObject httpParams = new JSONObject();
         try {
+            httpParams.put("access_token", mCurrentAccessToken);
             httpParams.put(NAME_KEY, name);
+            httpParams.put(PUBLIC_KEY, profilePublic);
         } catch (JSONException e) {
             Log.d("uploadProfile", e.getMessage());
             return false;
         }
         HTTPRequestHelper helper = new HTTPRequestHelper(httpParams, this);
-        helper.performPost(UPLOAD_PROFILE_URL);
+        helper.performPost(UPLOAD_PROFILE_URL + "?access_token=" + mCurrentAccessToken);
 
         return mResponseProfile;
     }
@@ -191,16 +309,20 @@ public class Synchronize implements HTTPResponseCallback
         @Override
         protected void onPreExecute()
         {
+            mProgressDialog.show();
             mError = false;
         }
 
         @Override
         protected Void doInBackground(Void... params) {
+            Log.d("SYNC", "here");
+            mPreviousCallback = DBHelper.getCallback();
             mDBHelper = DBHelper.getInstance(mContext, this);
             String select = ImageEntry.COLUMN_SYNC + "=?";
-            String[] args = {String.valueOf(false)};
+            String[] args = {String.valueOf(0)};
             Cursor data = mDBHelper.select(ImageEntry.TABLE_NAME_WITH_PREFIX,
                     ImageEntry.TABLE_PROJECTION, select, args, null, null, null);
+
             if (data != null) {
                 while (data.moveToNext()) {
                     String path = data.getString(data.getColumnIndex(ImageEntry.COLUMN_PATH));
@@ -217,11 +339,12 @@ public class Synchronize implements HTTPResponseCallback
 
             Cursor profile = mDBHelper.select(AccountEntry.TABLE_NAME_WITH_PREFIX,
                     AccountEntry.TABLE_PROJECTION, select, args, null, null, null);
-            if (profile != null) {
+            if (profile != null && profile.getCount() > 0) {
                 profile.moveToFirst();
                 Integer id = profile.getInt(profile.getColumnIndex(AccountEntry._ID));
                 String name = profile.getString(profile.getColumnIndex(AccountEntry.COLUMN_NAME));
-                boolean response = uploadProfile(name);
+                int profilePublic = profile.getInt(profile.getColumnIndex(AccountEntry.COLUMN_PUBLIC));
+                boolean response = uploadProfile(name, profilePublic);
                 if (response) {
                     ContentValues values = new ContentValues();
                     values.put(AccountEntry.COLUMN_SYNC, true);
@@ -241,6 +364,7 @@ public class Synchronize implements HTTPResponseCallback
         {
             mProgressDialog.dismiss();
             showErrorIfNeeded();
+            mDBHelper.restoreCallback(mPreviousCallback);
         }
 
         @Override
@@ -281,11 +405,14 @@ public class Synchronize implements HTTPResponseCallback
     public void showErrorIfNeeded() {
         if (mError) {
             AppUtils.showToast(mContext, mContext.getResources().getString(R.string.error_synchronize));
+        } else {
+            AppUtils.showToast(mContext, mContext.getResources().getString(R.string.success_synchronized));
         }
     }
 
     @Override
     public void onResponseReady(String response) {
+        Log.d("RESPONSE", response);
         mResponseProfile = JSONParse.checkEditProfileStatus(response);
     }
 }

@@ -173,4 +173,12 @@ public class HTTPRequestHelper
     public static interface HTTPResponseCallback {
         public void onResponseReady(String response);
     }
+
+    /**
+     * Method user for update POST parameters in multiple requests
+     * @param params the new POST parameters
+     */
+    public void setParams(JSONObject params) {
+        mParams = params;
+    }
 }

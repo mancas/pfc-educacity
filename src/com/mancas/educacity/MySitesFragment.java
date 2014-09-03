@@ -106,6 +106,8 @@ public class MySitesFragment extends Fragment implements DBHelperCallback
     @Override
     public void onSelectReady(Cursor data) {
         if (data != null) {
+            if (data.getCount() > 0 && mItems.size() > 0)
+                mItems = new ArrayList<Site>();
             while (data.moveToNext()) {
                 Site site = new Site();
                 site.setId(data.getInt(data.getColumnIndex(SiteEntry._ID)));
